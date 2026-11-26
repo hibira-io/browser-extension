@@ -6,7 +6,7 @@ Hibi in Chrome's side panel: hand repetitive web chores to Hibi, one site at a t
 - **Reads, clicks and types for you.** Menus, tabs, search, filters, typing and paging run without asking at each step.
 - **Asks before it submits.** A save, send, pay or delete is filled in and then waits for your Approve.
 - **Never on sign-in pages.** Sign-in, sign-up and robot-check pages are yours. Hibi never reads or types passwords, card numbers or one-time codes.
-- **Plain pricing.** A free monthly allowance of tasks, then a small price per task. One task is one request of up to 20 steps.
+- **Plain pricing.** 50 free tasks a month with a Hibira account. One task is one request.
 
 ## Develop
 
@@ -53,4 +53,4 @@ Bump `version` in `package.json` and `public/manifest.json`, then publish a GitH
 
 ## 中文摘要
 
-Hibi 的 Chrome 擴充功能：在側邊欄把重複的網頁雜事交給 Hibi。安裝時不要求任何網站權限，使用者逐一開啟網站；一般操作（選單、分頁、搜尋、篩選、輸入、換頁）直接執行，送出、儲存、付款、刪除會先填好再等使用者同意；登入、註冊、機器人驗證頁完全不碰，也不讀寫密碼、卡號、驗證碼。免費每月任務額度，之後按任務計費（每任務最多 20 步）。`npm run build` 建置，共用 SDK 核心（`vendor/`，由 `scripts/sync-core.sh` 從 pusher-server 同步），`demo/` 是本機 demo（虛構商店後台＋腳本化 API，不碰正式環境），`e2e/run.cjs` 跑端對端測試並產生商店截圖。發布：更新兩處版本號後建立 GitHub Release，CI 產生上架用 zip。
+Hibi 的 Chrome 擴充功能：在側邊欄把重複的網頁雜事交給 Hibi。安裝時不要求任何網站權限，使用者逐一開啟網站；一般操作（選單、分頁、搜尋、篩選、輸入、換頁）直接執行，送出、儲存、付款、刪除會先填好再等使用者同意；登入、註冊、機器人驗證頁完全不碰，也不讀寫密碼、卡號、驗證碼。每個 Hibira 帳號每月 50 個免費任務。`npm run build` 建置，共用 SDK 核心（`vendor/`，由 `scripts/sync-core.sh` 從 pusher-server 同步），`demo/` 是本機 demo（虛構商店後台＋腳本化 API，不碰正式環境），`e2e/run.cjs` 跑端對端測試並產生商店截圖。發布：更新兩處版本號後建立 GitHub Release，CI 產生上架用 zip。

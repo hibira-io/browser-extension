@@ -29,7 +29,7 @@ YOUR SIGN-INS STAY YOURS
 Hibi never works on sign-in, sign-up or robot-check pages, and it never reads or types passwords, card numbers or one-time codes. It works only as you, in your own browser, so it can't do anything you couldn't.
 
 SIMPLE PRICING
-Every Hibira account gets free tasks each month. One task is one request, up to 20 steps.
+Every Hibira account gets 50 free tasks each month. One task is one request.
 
 HOW TO START
 1. Click the Hibi button in the toolbar (or press Alt+Shift+H).
@@ -70,7 +70,7 @@ Hibi carries out web chores the user asks for in the side panel, on sites the us
 | activeTab | When the user clicks the toolbar button, presses the shortcut or picks "Use Hibi on this site", the panel learns which site the tab is on so it can offer to turn Hibi on there. |
 | scripting | Injects Hibi's page tools (read the page, click, type, select, scroll) into the active tab, only on sites the user turned on. |
 | storage | Keeps the user's sign-in session on this device. |
-| identity | Signs the user in to their Hibira account with launchWebAuthFlow. |
+| identity | Signs the user in to their Hibira account (Sign in with Hibira, OAuth with PKCE) with launchWebAuthFlow. |
 | contextMenus | Adds "Use Hibi on this site" to the page's right-click menu. |
 | Host permissions (optional) | Requested one origin at a time, only when the user presses "Turn on for <site>", so Hibi can work on that site. None are requested at install, and the user can turn any site off. |
 
