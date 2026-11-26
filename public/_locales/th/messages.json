@@ -100,11 +100,5 @@
   },
   "signInFailed": {
     "message": "ลงชื่อเข้าใช้ไม่สำเร็จ โปรดลองอีกครั้ง"
-  },
-  "confirmClick": {
-    "message": "คลิก \"$1\""
-  },
-  "confirmEnter": {
-    "message": "พิมพ์ \"$1\" ใน \"$2\" แล้วกด Enter"
   }
 }

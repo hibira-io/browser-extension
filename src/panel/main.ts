@@ -4,6 +4,9 @@
 import { HttpTransport, SecretaryError } from '../../vendor/secretary/core/api';
 import { ask as askCore, type RunState, type Step } from '../../vendor/secretary/core/runner';
 import { builtinTools } from '../../vendor/secretary/core/tools';
+import { pickLang } from '../../vendor/secretary/core/i18n';
+import { stepTarget } from '../../vendor/secretary/core/livechat';
+import type { AuditStep } from '../../vendor/secretary/core/runner';
 import type { Message, Summary, Tool, TurnResult } from '../../vendor/secretary/core/types';
 import { currentSession, signIn, signOut } from '../chrome/auth';
 import { BASE } from '../chrome/config';
@@ -184,21 +187,11 @@ function ask(card: HTMLElement, yes: string, no: string): Promise<boolean> {
   });
 }
 
-// The core words approval summaries in English; show them in the panel's
-// language.
-function localSummary(text: string): string {
-  const click = text.match(/^Click "(.*)"$/s);
-  if (click) return chrome.i18n.getMessage('confirmClick', [click[1]!]);
-  const enter = text.match(/^Type "(.*)" into "(.*)" and press Enter$/s);
-  if (enter) return chrome.i18n.getMessage('confirmEnter', [enter[1]!, enter[2]!]);
-  return text;
-}
-
 function approvalCard(summary: Summary): Promise<boolean> {
   const card = document.createElement('div');
   card.className = 'msg approval';
   const title = document.createElement('strong');
-  title.textContent = localSummary(summary.text);
+  title.textContent = summary.text;
   card.append(title);
   if (summary.fields?.length) {
     const ul = document.createElement('ul');
@@ -253,7 +246,32 @@ function rememberRefs(messages: Message[]): void {
   }
 }
 
+// The workspace's audit log: one row per step that acted, and for an
+// approved step the fields the approval card showed, as the SDK's panel
+// sends them (private fields and passwords are already left out by the core).
+const audits: AuditStep[] = [];
+const targets = new Map<string, Promise<string>>();
+const asked = new Map<string, string[]>();
+let waitingStep = '';
+
+function trace(step: Step): void {
+  if (step.tool === 'read_page' || step.tool === 'find' || step.tool === 'point') return;
+  if (!targets.has(step.id)) targets.set(step.id, page ? stepTarget(step, page).catch(() => '') : Promise.resolve(''));
+  if (step.state === 'waiting') waitingStep = step.id;
+  if (step.state === 'running' || step.state === 'waiting') return;
+  const fields = asked.get(step.id);
+  const outcome: AuditStep['outcome'] = step.state === 'done' ? (fields ? 'approved' : 'done') : step.state;
+  const target = targets.get(step.id)!;
+  asked.delete(step.id);
+  targets.delete(step.id);
+  const row: AuditStep = { tool: step.tool, target: '', outcome, by: fields ? 'desk' : undefined, fields };
+  audits.push(row);
+  // Read when the step started, so it has long resolved by the next turn.
+  void target.then((t) => (row.target = t));
+}
+
 function onStep(step: Step): void {
+  trace(step);
   if (step.state === 'waiting') return;
   let line = stepLines.get(step.id);
   if (!line) {
@@ -303,7 +321,7 @@ async function run(): Promise<void> {
   say('me', text);
   if (!page) {
     page = new ExtensionPage(tab.id, origin);
-    tools = builtinTools(page).filter((x) => x.name !== 'point');
+    tools = builtinTools(page, () => pickLang(chrome.i18n.getUILanguage())).filter((x) => x.name !== 'point');
   }
   await page.refresh();
   const current = page;
@@ -319,7 +337,11 @@ async function run(): Promise<void> {
       auto: () => false,
       page: () => current.current,
       locale: () => chrome.i18n.getUILanguage(),
-      approve: (_tool, _input, summary) => approvalCard(summary),
+      approve: (_tool, _input, summary) => {
+        if (waitingStep) asked.set(waitingStep, summary.fields ?? []);
+        return approvalCard(summary);
+      },
+      audit: () => audits.splice(0),
       onMessages,
       onStep,
       onTurn: showUsage,
