@@ -1,0 +1,24 @@
+Giao phần việc lặp đi lặp lại trên web cho Hibi: điền cùng một biểu mẫu nhiều lần, chép thông tin từ trang này sang trang khác, bấm qua từng dòng trong danh sách.
+
+Mở Hibi ở bảng bên, nói điều bạn cần bằng lời của mình, rồi xem công việc được làm ngay trong thẻ của bạn.
+
+BẬT CHO TỪNG TRANG
+Khi cài đặt, Hibi không xin quyền truy cập trang web nào. Bạn bật Hibi cho một trang từ bảng bên và Chrome chỉ cấp quyền cho đúng trang đó. Tắt bất cứ lúc nào.
+
+MỌI LẦN GỬI ĐỀU CHỜ BẠN DUYỆT
+Hibi đọc trang, bấm, nhập và chọn giúp bạn. Trước khi lưu, gửi, thanh toán hay xóa, Hibi điền sẵn biểu mẫu rồi dừng lại, cho bạn xem nội dung sẽ gửi. Không có gì được gửi cho đến khi bạn bấm Duyệt.
+
+ĐĂNG NHẬP VẪN LÀ CỦA BẠN
+Hibi không thao tác trên trang đăng nhập, đăng ký hay xác minh robot, và không bao giờ đọc hay nhập mật khẩu, số thẻ hoặc mã dùng một lần. Hibi chỉ làm việc với tư cách của bạn trong trình duyệt của bạn, nên không thể làm điều bạn không làm được.
+
+GIÁ ĐƠN GIẢN
+Mỗi tài khoản Hibira có 50 tác vụ miễn phí mỗi tháng. Một yêu cầu là một tác vụ.
+
+BẮT ĐẦU
+1. Bấm nút Hibi trên thanh công cụ (hoặc nhấn Alt+Shift+H).
+2. Đăng nhập bằng tài khoản Hibira.
+3. Bật Hibi cho trang đang mở và cho biết bạn cần làm gì.
+
+Liên hệ: support@hibira.io
+
+Hibira

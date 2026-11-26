@@ -1,0 +1,24 @@
+Hibi takes the repetitive part of web work off your hands: filling the same form again and again, copying details from one page to another, clicking through a list one row at a time.
+
+Open Hibi in the side panel, say what you need in your own words, and watch it happen in your own tab.
+
+ONE SITE AT A TIME
+Hibi asks for no website access when you install it. You turn it on for a site from the panel, and Chrome grants that site only. Turn it off whenever you like.
+
+YOU APPROVE EVERY SUBMIT
+Hibi reads the page, clicks, types and picks options for you. Before anything is saved, sent, paid for or deleted, it fills in the form and stops, showing you what will be submitted. Nothing is submitted until you press Approve.
+
+YOUR SIGN-INS STAY YOURS
+Hibi never works on sign-in, sign-up or robot-check pages, and it never reads or types passwords, card numbers or one-time codes. It works only as you, in your own browser, so it can't do anything you couldn't.
+
+SIMPLE PRICING
+Every Hibira account gets 50 free tasks each month. One task is one request.
+
+HOW TO START
+1. Click the Hibi button in the toolbar (or press Alt+Shift+H).
+2. Sign in with your Hibira account.
+3. Turn Hibi on for the site you're on, and tell it what to do.
+
+Questions: support@hibira.io
+
+Hibira

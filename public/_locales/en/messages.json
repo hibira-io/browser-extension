@@ -100,5 +100,11 @@
   },
   "signInFailed": {
     "message": "Sign-in didn't finish. Please try again."
+  },
+  "confirmClick": {
+    "message": "Click \"$1\""
+  },
+  "confirmEnter": {
+    "message": "Type \"$1\" into \"$2\" and press Enter"
   }
 }

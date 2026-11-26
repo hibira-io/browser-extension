@@ -100,5 +100,11 @@
   },
   "signInFailed": {
     "message": "登入沒有完成，請再試一次。"
+  },
+  "confirmClick": {
+    "message": "按下「$1」"
+  },
+  "confirmEnter": {
+    "message": "在「$2」輸入「$1」並按 Enter"
   }
 }

@@ -1,0 +1,110 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "ให้ Hibi ช่วยงานเว็บที่ทำซ้ำๆ เปิดใช้ทีละเว็บไซต์ และทุกการส่งจะรอให้คุณอนุมัติก่อน"
+  },
+  "actionTitle": {
+    "message": "เปิด Hibi"
+  },
+  "askPlaceholder": {
+    "message": "ให้ช่วยทำอะไรในหน้านี้?"
+  },
+  "send": {
+    "message": "ส่ง"
+  },
+  "stop": {
+    "message": "หยุด"
+  },
+  "account": {
+    "message": "บัญชี"
+  },
+  "signInIntro": {
+    "message": "Hibi ช่วยทำงานซ้ำๆ บนเว็บไซต์ที่คุณเลือก เช่น กรอกฟอร์ม คัดลอกข้อมูลข้ามหน้า หรือคลิกไล่ทีละรายการ ลงชื่อเข้าใช้ด้วยบัญชี Hibira เพื่อเริ่มต้น แพ็กเกจฟรีมีงานให้ใช้ทุกเดือน"
+  },
+  "signIn": {
+    "message": "ลงชื่อเข้าใช้ด้วย Hibira"
+  },
+  "unsupportedPage": {
+    "message": "เปิดเว็บไซต์ในแท็บนี้เพื่อใช้ Hibi ที่นี่"
+  },
+  "siteOffIntro": {
+    "message": "Hibi ยังปิดอยู่สำหรับ $1 เปิดเพื่อให้ Hibi อ่านและทำงานบนเว็บไซต์นี้ได้ ปิดได้ทุกเมื่อ"
+  },
+  "turnOn": {
+    "message": "เปิดใช้บน $1"
+  },
+  "turnOffSite": {
+    "message": "ปิดสำหรับเว็บไซต์นี้"
+  },
+  "managePlan": {
+    "message": "แพ็กเกจและการใช้งาน"
+  },
+  "signOut": {
+    "message": "ออกจากระบบ"
+  },
+  "hello": {
+    "message": "สวัสดี ฉันชื่อ Hibi บอกได้เลยว่าจะให้ทำอะไรบน $1 หน้าลงชื่อเข้าใช้และการยืนยันว่าไม่ใช่โรบอตฉันจะปล่อยให้คุณทำเอง และจะถามก่อนส่งทุกครั้ง"
+  },
+  "approve": {
+    "message": "อนุมัติ"
+  },
+  "decline": {
+    "message": "ยังไม่ส่ง"
+  },
+  "approved": {
+    "message": "อนุมัติแล้ว"
+  },
+  "declined": {
+    "message": "ไม่ได้ส่ง"
+  },
+  "working": {
+    "message": "กำลังทำ…"
+  },
+  "tasksLeft": {
+    "message": "เหลือ $1 จาก $2 งานในเดือนนี้"
+  },
+  "tasksExtra": {
+    "message": "งานเพิ่มเติม: งานละ US$$$1"
+  },
+  "allowanceUsed": {
+    "message": "คุณใช้งานของเดือนนี้ครบแล้ว เปิด \"แพ็กเกจและการใช้งาน\" เพื่อเพิ่ม"
+  },
+  "useOnSite": {
+    "message": "ใช้ Hibi บนเว็บไซต์นี้"
+  },
+  "needInvoke": {
+    "message": "หากต้องการใช้ Hibi ในแท็บนี้ ให้คลิกปุ่ม Hibi ในแถบเครื่องมือ กด Alt+Shift+H หรือคลิกขวาที่หน้าแล้วเลือก \"ใช้ Hibi บนเว็บไซต์นี้\""
+  },
+  "actRead": {
+    "message": "อ่านหน้าเว็บ"
+  },
+  "actClick": {
+    "message": "คลิก \"$1\""
+  },
+  "actType": {
+    "message": "กรอก \"$1\""
+  },
+  "actSelect": {
+    "message": "เลือก \"$1\""
+  },
+  "actScroll": {
+    "message": "เลื่อนหน้า"
+  },
+  "signInAgain": {
+    "message": "โปรดลงชื่อเข้าใช้อีกครั้ง"
+  },
+  "actNavigate": {
+    "message": "เปิดหน้าเว็บ"
+  },
+  "signInFailed": {
+    "message": "ลงชื่อเข้าใช้ไม่สำเร็จ โปรดลองอีกครั้ง"
+  },
+  "confirmClick": {
+    "message": "คลิก \"$1\""
+  },
+  "confirmEnter": {
+    "message": "พิมพ์ \"$1\" ใน \"$2\" แล้วกด Enter"
+  }
+}

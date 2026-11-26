@@ -61,7 +61,9 @@ const assert = (ok, msg) => {
   await site.goto('http://northwind.example/orders');
   await panel.goto(`chrome-extension://${id}/panel.html?tab=${await tabOf('http://northwind.example')}`);
   await panel.waitForSelector('#ask:not([hidden])');
-  await panel.fill('#input', 'Mark order #1042 shipped: DHL, tracking JD014600.');
+  const { S, pickLang } = await import('../demo/strings.mjs');
+  const L = S[pickLang(LANG)];
+  await panel.fill('#input', L.prompt);
   await panel.click('#send');
   await panel.waitForSelector('.msg.approval button.primary', { timeout: 20000 }).catch(async (e) => {
     console.log(await panel.textContent('#log'));
@@ -72,12 +74,12 @@ const assert = (ok, msg) => {
   assert(site.url().endsWith('/orders/1042'), `clicked through to the order (${site.url()})`);
   assert((await site.inputValue('#tracking')) === 'JD014600', 'typed the tracking number');
   assert((await site.inputValue('#carrier')) === 'dhl', 'picked the carrier');
-  assert(!(await site.textContent('main')).includes('Shipment saved'), 'not saved before approval');
+  assert(!(await site.textContent('main')).includes(L.saved), 'not saved before approval');
   await shot(`3-approval-${tag}`);
   await panel.click('.msg.approval button.primary');
   await panel.waitForFunction(() => document.querySelectorAll('.msg.hibi').length >= 4 && document.querySelector('#send:not([hidden])'), null, { timeout: 20000 });
   await site.waitForSelector('.ok');
-  assert((await site.textContent('h1')).includes('Shipped'), 'order is shipped after approval');
+  assert((await site.textContent('h1')).includes(L.shipped), 'order is shipped after approval');
   await shot(`4-done-${tag}`);
 
   // Sign-in pages are left alone.

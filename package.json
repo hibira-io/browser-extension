@@ -10,7 +10,9 @@
     "watch": "node scripts/build.mjs --watch",
     "zip": "node scripts/build.mjs && node scripts/zip.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "shots": "bash scripts/shots.sh",
+    "promo": "node scripts/promo.cjs"
   },
   "devDependencies": {
     "@types/chrome": "0.0.287",

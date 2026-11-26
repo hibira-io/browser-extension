@@ -10,49 +10,23 @@ Copy for the developer dashboard. Chrome doesn't let extensions operate Web Stor
 
 **Category:** Productivity → Workflow & Planning
 
-**Language:** English (the package also ships 繁體中文, 简体中文, 日本語, 한국어)
+**Languages:** English (default), 繁體中文, 简体中文, 日本語, 한국어, ไทย, Tiếng Việt. The name and summary come from the package's `_locales`. For each language, pick it in the dashboard's language menu and paste `store/description/<lang>.txt`, that language's 5 screenshots and its promo tile `store/promo/<lang>.png`.
 
-**Description:**
+**Description:** `store/description/<lang>.txt` (en, zh-TW, zh-CN, ja, ko, th, vi)
 
-```
-Hibi takes the repetitive part of web work off your hands: filling the same form again and again, copying details from one page to another, clicking through a list one row at a time.
+**Screenshots** (1280×800, one set per language, from the local demo: `npm run shots`):
+`e2e/shots/store/<lang>/`, in this order:
+1. `4-done-light.png`: a chore done, with the approved submit
+2. `3-approval-light.png`: the approval card before a save
+3. `2-site-off-light.png`: turning Hibi on for one site
+4. `3-approval-dark.png`: dark mode
+5. `1-signin-light.png`: sign-in
 
-Open Hibi in the side panel, say what you need in your own words, and watch it happen in your own tab.
-
-ONE SITE AT A TIME
-Hibi asks for no website access when you install it. You turn it on for a site from the panel, and Chrome grants that site only. Turn it off whenever you like.
-
-YOU APPROVE EVERY SUBMIT
-Hibi reads the page, clicks, types and picks options for you. Before anything is saved, sent, paid for or deleted, it fills in the form and stops, showing you what will be submitted. Nothing is submitted until you press Approve.
-
-YOUR SIGN-INS STAY YOURS
-Hibi never works on sign-in, sign-up or robot-check pages, and it never reads or types passwords, card numbers or one-time codes. It works only as you, in your own browser, so it can't do anything you couldn't.
-
-SIMPLE PRICING
-Every Hibira account gets 50 free tasks each month. One task is one request.
-
-HOW TO START
-1. Click the Hibi button in the toolbar (or press Alt+Shift+H).
-2. Sign in with your Hibira account.
-3. Turn Hibi on for the site you're on, and tell it what to do.
-
-Questions: support@hibira.io
-
-Hibira
-```
-
-**Screenshots** (1280×800, English, from the local demo): `e2e/shots/store/`
-1. `4-done-en-US-light.png`: a chore done, with the approved submit
-2. `3-approval-en-US-light.png`: the approval card before a save
-3. `2-site-off-en-US-light.png`: turning Hibi on for one site
-4. `3-approval-en-US-dark.png`: dark mode
-5. `1-signin-en-US-light.png`: sign-in
-
-**Small promo tile** (440×280): `store/promo-440x280.png`
+**Small promo tile** (440×280): `store/promo/<lang>.png` (`node scripts/promo.cjs`)
 
 **Official URL:** https://hibira.io (after the site is verified in Search Console)
-**Homepage URL:** https://hibira.io/secretary/extension
-**Support URL:** https://hibira.io/support
+**Homepage URL:** https://hibira.io/secretary
+**Support URL:** https://hibira.io/portal/support
 
 ## Privacy practices tab
 
@@ -86,7 +60,7 @@ Hibi carries out web chores the user asks for in the side panel, on sites the us
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
 - I do not use or transfer user data to determine creditworthiness or for lending purposes.
 
-**Privacy policy URL:** https://hibira.io/privacy (it must have the browser-extension section before submitting)
+**Privacy policy URL:** https://hibira.io/legal/privacy (its Hibi for Chrome section ships with pusher-server #1004)
 
 ## Distribution tab
 
@@ -98,9 +72,9 @@ Hibi carries out web chores the user asks for in the side panel, on sites the us
 
 ```
 1. Click the Hibi toolbar button to open the side panel, then "Sign in with Hibira" with the test account below.
-2. Open https://demos.hibira.io/northwind/orders (a demo shop admin), press "Turn on for demos.hibira.io" in the panel and allow it.
+2. Open https://demos.hibira.io/examples/northwind/ (a demo shop admin), press "Turn on for demos.hibira.io" in the panel and allow it.
 3. Type: Mark order #1042 shipped with DHL, tracking JD014600.
 4. Hibi opens the order, fills in the carrier and tracking number, and shows an approval card. Press Approve to save.
 
-Test account: <email> / <password>
+Test account: (Danny types the reviewer account's email and password in the dashboard; they are never stored here)
 ```

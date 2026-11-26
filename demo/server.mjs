@@ -4,12 +4,13 @@
 //
 //   node demo/server.mjs            # http://localhost:5174
 import { createServer } from 'node:http';
+import { S, pickLang } from './strings.mjs';
 
 const PORT = Number(process.env.PORT ?? 5174);
 const orders = [
-  { id: 1042, customer: 'Mika Tanaka', items: 'Ceramic mug ×2', total: '$36.00', status: 'Awaiting shipment', carrier: '', tracking: '' },
-  { id: 1043, customer: 'Leo Martins', items: 'Linen apron', total: '$28.00', status: 'Awaiting shipment', carrier: '', tracking: '' },
-  { id: 1044, customer: 'Ana Ruiz', items: 'Teapot, cups ×4', total: '$84.00', status: 'Awaiting shipment', carrier: '', tracking: '' },
+  { id: 1042, row: 0, total: '$36.00', shipped: false, carrier: '', tracking: '' },
+  { id: 1043, row: 1, total: '$28.00', shipped: false, carrier: '', tracking: '' },
+  { id: 1044, row: 2, total: '$84.00', shipped: false, carrier: '', tracking: '' },
 ];
 
 const css = `body{margin:0;font:15px/1.5 system-ui,sans-serif;color:#1f2430;background:#f5f6f8}
@@ -23,43 +24,46 @@ button{font:inherit;margin-top:16px;padding:9px 18px;border:0;border-radius:8px;
 .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;background:#fff3d6;color:#7a5600}.badge.done{background:#dcf5e6;color:#1e6b40}
 .ok{background:#dcf5e6;color:#1e6b40;padding:10px 14px;border-radius:8px;margin-bottom:16px}`;
 
-function layout(title, body) {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${title} · Northwind Supply</title><style>${css}</style></head>
-<body><header>Northwind Supply<nav><a href="/orders">Orders</a> <a href="/orders">Products</a> <a href="/orders">Customers</a></nav></header><main>${body}</main></body></html>`;
+function layout(L, lang, title, body) {
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>${title} · Northwind Supply</title><style>${css}</style></head>
+<body><header>Northwind Supply<nav>${L.nav.map((n) => `<a href="/orders">${n}</a>`).join(' ')}</nav></header><main>${body}</main></body></html>`;
 }
 
-const badge = (o) => `<span class="badge ${o.status === 'Shipped' ? 'done' : ''}">${o.status}</span>`;
+const badge = (L, o) => `<span class="badge ${o.shipped ? 'done' : ''}">${o.shipped ? L.shipped : L.waiting}</span>`;
 
-function ordersPage() {
-  const rows = orders.map((o) => `<tr><td><a href="/orders/${o.id}">#${o.id}</a></td><td>${o.customer}</td><td>${o.items}</td><td>${o.total}</td><td>${badge(o)}</td></tr>`).join('');
-  return layout('Orders', `<h1>Orders</h1><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`);
+function ordersPage(lang) {
+  const L = S[lang];
+  const rows = orders.map((o) => `<tr><td><a href="/orders/${o.id}">#${o.id}</a></td><td>${L.rows[o.row][0]}</td><td>${L.rows[o.row][1]}</td><td>${o.total}</td><td>${badge(L, o)}</td></tr>`).join('');
+  return layout(L, lang, L.orders, `<h1>${L.orders}</h1><table><thead><tr>${L.cols.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`);
 }
 
-function orderPage(o, saved) {
+function orderPage(lang, o, saved) {
+  const L = S[lang];
   const opt = (v, t) => `<option value="${v}" ${o.carrier === v ? 'selected' : ''}>${t}</option>`;
-  return layout(`Order #${o.id}`, `${saved ? '<div class="ok">Shipment saved.</div>' : ''}<h1>Order #${o.id} ${badge(o)}</h1>
-<div class="card"><strong>${o.customer}</strong><p>${o.items} · ${o.total}</p></div>
-<form class="card" method="post" action="/orders/${o.id}"><h2 style="font-size:17px;margin:0">Shipment</h2>
-<label for="carrier">Carrier</label><select id="carrier" name="carrier">${opt('', 'Choose a carrier')}${opt('dhl', 'DHL')}${opt('ups', 'UPS')}${opt('fedex', 'FedEx')}</select>
-<label for="tracking">Tracking number</label><input id="tracking" name="tracking" value="${o.tracking}">
-<button type="submit">Save shipment</button></form><p><a href="/orders">← All orders</a></p>`);
+  return layout(L, lang, `${L.order} #${o.id}`, `${saved ? `<div class="ok">${L.saved}</div>` : ''}<h1>${L.order} #${o.id} ${badge(L, o)}</h1>
+<div class="card"><strong>${L.rows[o.row][0]}</strong><p>${L.rows[o.row][1]} · ${o.total}</p></div>
+<form class="card" method="post" action="/orders/${o.id}"><h2 style="font-size:17px;margin:0">${L.shipment}</h2>
+<label for="carrier">${L.carrier}</label><select id="carrier" name="carrier">${opt('', L.choose)}${opt('dhl', 'DHL')}${opt('ups', 'UPS')}${opt('fedex', 'FedEx')}</select>
+<label for="tracking">${L.tracking}</label><input id="tracking" name="tracking" value="${o.tracking}">
+<button type="submit">${L.save}</button></form><p><a href="/orders">${L.back}</a></p>`);
 }
 
 // The scripted stand-in for the model, speaking the Secretary API's turn
 // format: one fixed chore, driven by the refs in the latest page read.
 function scriptedTurn(req) {
+  const L = S[pickLang(req.locale)];
   const step = req.messages.filter((m) => m.role === 'assistant').length;
   const lastRead = [...req.messages].reverse().flatMap((m) => m.content).find((b) => b.type === 'tool_result' && String(b.content).startsWith('Page:'));
   const ref = (label) => lastRead?.content.split('\n').find((l) => l.includes(label))?.match(/\[(e\d+)\]/)?.[1];
   const use = (name, input) => ({ type: 'tool_use', id: `t${step}_${name}`, name, input });
   const plan = [
-    () => [{ type: 'text', text: 'Opening order #1042.' }, use('read_page', {})],
+    () => [{ type: 'text', text: L.opening }, use('read_page', {})],
     () => [use('click', { ref: ref('"#1042"') })],
     () => [use('read_page', {})],
-    () => [use('select', { ref: ref('"Carrier"'), value: 'DHL' }), use('type', { ref: ref('"Tracking number"'), text: 'JD014600' })],
-    () => [{ type: 'text', text: 'Filled in DHL and JD014600. Saving needs your OK.' }, use('click', { ref: ref('"Save shipment"') })],
+    () => [use('select', { ref: ref(`"${L.carrier}"`), value: 'DHL' }), use('type', { ref: ref(`"${L.tracking}"`), text: 'JD014600' })],
+    () => [{ type: 'text', text: L.filled }, use('click', { ref: ref(`"${L.save}"`) })],
   ];
-  const content = step < plan.length ? plan[step]() : [{ type: 'text', text: 'Order #1042 is marked shipped with DHL JD014600. Shall I do #1043 and #1044 the same way?' }];
+  const content = step < plan.length ? plan[step]() : [{ type: 'text', text: L.done }];
   return {
     message: { role: 'assistant', content },
     stop_reason: content.some((b) => b.type === 'tool_use') ? 'tool_use' : 'end_turn',
@@ -108,9 +112,10 @@ createServer(async (req, res) => {
     const f = new URLSearchParams(await readBody(req));
     o.carrier = f.get('carrier') ?? '';
     o.tracking = f.get('tracking') ?? '';
-    if (o.carrier && o.tracking) o.status = 'Shipped';
+    if (o.carrier && o.tracking) o.shipped = true;
     return res.writeHead(303, { Location: `/orders/${o.id}?saved=1` }).end();
   }
-  const html = o ? orderPage(o, url.searchParams.has('saved')) : ordersPage();
+  const lang = pickLang(url.searchParams.get('lang') ?? req.headers['accept-language']);
+  const html = o ? orderPage(lang, o, url.searchParams.has('saved')) : ordersPage(lang);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(html);
 }).listen(PORT, () => console.log(`demo on http://localhost:${PORT}`));
