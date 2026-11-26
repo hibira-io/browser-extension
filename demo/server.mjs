@@ -56,15 +56,16 @@ function scriptedTurn(req) {
   const lastRead = [...req.messages].reverse().flatMap((m) => m.content).find((b) => b.type === 'tool_result' && String(b.content).startsWith('Page:'));
   const ref = (label) => lastRead?.content.split('\n').find((l) => l.includes(label))?.match(/\[(e\d+)\]/)?.[1];
   const use = (name, input) => ({ type: 'tool_use', id: `t${step}_${name}`, name, input });
-  const plan = [
-    () => [{ type: 'text', text: L.opening }, use('read_page', {})],
-    () => [use('click', { ref: ref('"#1042"') })],
-    () => [use('read_page', {})],
-    () => [use('select', { ref: ref(`"${L.carrier}"`), value: 'DHL' }), use('type', { ref: ref(`"${L.tracking}"`), text: 'JD014600' })],
-    () => [{ type: 'text', text: L.filled }, use('click', { ref: ref(`"${L.save}"`) })],
-  ];
-  const next = Number.isInteger(step) && step >= 0 && step < plan.length ? plan[step] : undefined;
-  const content = typeof next === 'function' ? next() : [{ type: 'text', text: L.done }];
+  // A switch rather than an array of steps indexed by the request.
+  let content;
+  switch (step) {
+    case 0: content = [{ type: 'text', text: L.opening }, use('read_page', {})]; break;
+    case 1: content = [use('click', { ref: ref('"#1042"') })]; break;
+    case 2: content = [use('read_page', {})]; break;
+    case 3: content = [use('select', { ref: ref(`"${L.carrier}"`), value: 'DHL' }), use('type', { ref: ref(`"${L.tracking}"`), text: 'JD014600' })]; break;
+    case 4: content = [{ type: 'text', text: L.filled }, use('click', { ref: ref(`"${L.save}"`) })]; break;
+    default: content = [{ type: 'text', text: L.done }];
+  }
   return {
     message: { role: 'assistant', content },
     stop_reason: content.some((b) => b.type === 'tool_use') ? 'tool_use' : 'end_turn',
