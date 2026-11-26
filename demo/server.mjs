@@ -63,7 +63,8 @@ function scriptedTurn(req) {
     () => [use('select', { ref: ref(`"${L.carrier}"`), value: 'DHL' }), use('type', { ref: ref(`"${L.tracking}"`), text: 'JD014600' })],
     () => [{ type: 'text', text: L.filled }, use('click', { ref: ref(`"${L.save}"`) })],
   ];
-  const content = step < plan.length ? plan[step]() : [{ type: 'text', text: L.done }];
+  const next = Number.isInteger(step) && step >= 0 && step < plan.length ? plan[step] : undefined;
+  const content = typeof next === 'function' ? next() : [{ type: 'text', text: L.done }];
   return {
     message: { role: 'assistant', content },
     stop_reason: content.some((b) => b.type === 'tool_use') ? 'tool_use' : 'end_turn',
