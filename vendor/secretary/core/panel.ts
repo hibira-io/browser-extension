@@ -19,6 +19,8 @@ export interface PanelOptions {
   autoAllowed: boolean;
   voice: boolean;
   speech: boolean;
+  /** Offer hand-off to a phone (the transport supports it). */
+  handoff?: boolean;
   /** Where to mount; default a fixed launcher in the page's corner. */
   mount?: HTMLElement;
   position?: 'right' | 'left';
@@ -33,6 +35,26 @@ export interface PanelEvents {
   mic: () => void;
   readAloud: (on: boolean) => void;
   open: (open: boolean) => void;
+  /** Start (true) or end (false) a hand-off to a phone. */
+  handoff?: (on: boolean) => void;
+}
+
+/** One line of the log, as the phone shows it. */
+export interface LogItem {
+  k: 'me' | 'ai' | 'note' | 'step';
+  text: string;
+  /** A step's state (running, waiting, done, failed...). */
+  s?: string;
+}
+
+/** What the phone sees: the log, the approval waiting, whether work runs. */
+export interface PanelSnapshot {
+  name: string;
+  avatar?: string;
+  lang: string;
+  busy: boolean;
+  items: LogItem[];
+  pending: { id: string; text: string; fields: string[] } | null;
 }
 
 const ICON = {
@@ -43,6 +65,7 @@ const ICON = {
   mic: '<rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
   reset: '<path d="M4 12a8 8 0 108-8 8 8 0 00-6 2.7M4 4v4h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M11 18h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   speaker: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
 };
 
@@ -67,6 +90,11 @@ header{display:flex;align-items:center;gap:8px;padding:12px 12px 12px 16px;borde
 .ib{width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:var(--mut);display:grid;place-items:center;cursor:pointer;position:relative}
 .ib:hover{background:var(--soft);color:var(--fg)}.ib.on{color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
 .ib[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:36px;right:0;background:var(--fg);color:var(--bg);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:2}
+.handoff{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--soft);position:sticky;top:0;z-index:1}
+.handoff img{width:168px;height:168px;image-rendering:pixelated;background:#fff;border-radius:8px;padding:6px}
+.handoff .hint{font-size:12.5px;color:var(--mut)}.handoff .lnk{background:none;border:0;color:var(--c);cursor:pointer;font:inherit;font-size:13px;text-decoration:underline}
+.handoff:has(.hb-on){flex-direction:row;padding:8px 12px;font-size:13px;gap:8px}.hb-on{width:8px;height:8px;border-radius:50%;background:#16a34a;flex:none}.handoff:has(.hb-on) .lnk{margin-left:auto}
+.ib.phone.on{color:var(--c)}
 .autobar{background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--fg);font-size:12px;padding:6px 16px;display:flex;gap:6px;align-items:center}
 .log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
 .msg{max-width:88%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word}
@@ -142,6 +170,9 @@ export class Panel {
   private micBtn?: HTMLButtonElement;
   private autobar!: HTMLDivElement;
   private busy = false;
+  private phoneBtn?: HTMLButtonElement;
+  private approvals = 0;
+  private pending: { id: string; text: string; fields: string[]; done: (v: boolean) => void } | null = null;
   private auto = false;
   private steps = new Map<string, HTMLDivElement>();
   private typing?: HTMLDivElement;
@@ -172,6 +203,7 @@ export class Panel {
       <div class="panel ${side}" role="dialog" aria-modal="false" hidden>
         <header>
           <div class="title"><span class="dot">${svg('spark', 15)}</span><span class="nm"></span></div>
+          <button class="ib phone" hidden></button>
           <button class="ib speak" hidden></button>
           <button class="ib auto" hidden></button>
           <button class="ib reset"></button>
@@ -234,6 +266,12 @@ export class Panel {
       this.micBtn.hidden = false;
       tip(this.micBtn, 'mic', 'mic');
       this.micBtn.onclick = () => this.ev.mic();
+    }
+    if (this.o.handoff && this.ev.handoff) {
+      this.phoneBtn = $('.phone');
+      this.phoneBtn.hidden = false;
+      tip(this.phoneBtn, 'handoff', 'phone');
+      this.phoneBtn.onclick = () => this.ev.handoff!(!this.phoneBtn!.classList.contains('on'));
     }
     if (this.o.speech) {
       const sp = $('.speak') as HTMLButtonElement;
@@ -401,6 +439,7 @@ export class Panel {
   /** Asks the user to approve; resolves with their answer. */
   approve(summary: Summary, signal: AbortSignal): Promise<boolean> {
     if (!this.isOpen()) this.setOpen(true);
+    const id = 'a' + ++this.approvals + '-' + Date.now().toString(36);
     return new Promise((resolve) => {
       const card = document.createElement('div');
       card.className = 'card';
@@ -427,8 +466,10 @@ export class Panel {
       const done = (v: boolean) => {
         card.remove();
         signal.removeEventListener('abort', abort);
+        this.pending = null;
         resolve(v);
       };
+      this.pending = { id, text: summary.text, fields: summary.fields ?? [], done };
       const abort = () => done(false);
       signal.addEventListener('abort', abort);
       yes.onclick = () => done(true);
@@ -436,6 +477,51 @@ export class Panel {
       this.append(card);
       yes.focus();
     });
+  }
+
+  /** Answers the approval waiting, from elsewhere (the phone); false when ref is not the one waiting. */
+  answer(ref: string, yes: boolean): boolean {
+    if (!this.pending || this.pending.id !== ref) return false;
+    this.pending.done(yes);
+    return true;
+  }
+
+  /** The log and the approval waiting, for the phone. */
+  snapshot(): PanelSnapshot {
+    const items: LogItem[] = [];
+    for (const el of Array.from(this.log.children) as HTMLElement[]) {
+      const text = (el.innerText || el.textContent || '').trim();
+      if (!text || el.classList.contains('card') || el.classList.contains('handoff')) continue;
+      if (el.classList.contains('step')) items.push({ k: 'step', text, s: [...el.classList].find((c) => c !== 'step') });
+      else if (el.classList.contains('me')) items.push({ k: 'me', text });
+      else if (el.classList.contains('ai')) items.push({ k: 'ai', text });
+      else if (el.classList.contains('note')) items.push({ k: 'note', text });
+    }
+    const p = this.pending;
+    return { name: this.o.name, avatar: this.o.avatar, lang: this.o.lang, busy: this.busy, items: items.slice(-60), pending: p && { id: p.id, text: p.text, fields: p.fields } };
+  }
+
+  /** Shows the QR code for the phone (or takes it away with null). */
+  showHandoff(h: { qr: string; url: string } | null, phone = false) {
+    this.log.querySelector('.handoff')?.remove();
+    this.phoneBtn?.classList.toggle('on', !!h);
+    if (!h) return;
+    const card = document.createElement('div');
+    card.className = 'handoff';
+    if (phone) {
+      card.innerHTML = '<span class="hb-on"></span><span></span><button type="button" class="lnk"></button>';
+      (card.children[1] as HTMLElement).textContent = this.tr('phoneOn');
+    } else {
+      card.innerHTML = '<b></b><img alt="" width="168" height="168"><div class="hint"></div><button type="button" class="lnk"></button>';
+      (card.querySelector('b') as HTMLElement).textContent = this.tr('scanTitle');
+      (card.querySelector('img') as HTMLImageElement).src = h.qr;
+      (card.querySelector('.hint') as HTMLElement).textContent = this.tr('scanHint');
+    }
+    const end = card.querySelector('.lnk') as HTMLButtonElement;
+    end.textContent = this.tr('endHandoff');
+    end.onclick = () => this.ev.handoff?.(false);
+    this.log.prepend(card);
+    if (!this.isOpen()) this.setOpen(true);
   }
 
   setLook(name: string, color: string) {

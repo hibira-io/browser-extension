@@ -9,7 +9,9 @@
 //   filtering, typing into fields, choosing options, scrolling.
 //
 // A page can override this for an element with data-secretary="safe"
-// (runs), "confirm" (asks) or "never" (refused).
+// (runs), "confirm" (asks) or "never" (refused). "private" hides the
+// element and everything in it from the assistant: it is not read, and
+// it is refused like "never".
 //
 // The policy works on a plain description of the element, so it is the
 // same in the page and in tests.

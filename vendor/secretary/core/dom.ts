@@ -38,7 +38,7 @@ export class Refs {
 
 function visible(el: Element): boolean {
   if (!(el instanceof HTMLElement) && !(el instanceof SVGElement)) return true;
-  if (el.closest(`[${UI_ATTR}]`)) return false;
+  if (el.closest(`[${UI_ATTR}],[data-secretary=private]`)) return false;
   if ((el as HTMLElement).hidden || el.getAttribute('aria-hidden') === 'true') return false;
   const cs = getComputedStyle(el);
   if (cs.display === 'none' || cs.visibility === 'hidden' || cs.visibility === 'collapse' || Number(cs.opacity) === 0) return false;
@@ -86,7 +86,7 @@ export function nameOf(el: Element): string {
 /** A wrapping label's own words, without the text of the controls inside it (a select's options). */
 function labelText(label: Element): string {
   const copy = label.cloneNode(true) as Element;
-  copy.querySelectorAll('select,textarea,input,button,datalist').forEach((n) => n.remove());
+  copy.querySelectorAll('select,textarea,input,button,datalist,script,style,template').forEach((n) => n.remove());
   return copy.textContent?.trim() ?? '';
 }
 
@@ -157,7 +157,7 @@ export function describe(el: Element): Target {
     type,
     role: el.getAttribute('role') ?? undefined,
     name: nameOf(el),
-    override: ov === 'safe' || ov === 'confirm' || ov === 'never' ? ov : undefined,
+    override: ov === 'private' ? 'never' : ov === 'safe' || ov === 'confirm' || ov === 'never' ? ov : undefined,
     autocomplete: (el as HTMLInputElement).autocomplete || el.getAttribute('autocomplete') || undefined,
     href,
     sameOrigin: href ? new URL(href, location.href).origin === location.origin : undefined,

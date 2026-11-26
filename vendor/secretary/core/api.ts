@@ -11,6 +11,29 @@ export interface Auth {
   session?: () => Promise<string>;
 }
 
+/** A new hand-off: the phone's link and its QR code (a PNG data URL). */
+export interface HandoffStart {
+  id: string;
+  url: string;
+  qr: string;
+  expires_at: string;
+}
+
+/** What the phone asks for. */
+export interface HandoffCommand {
+  seq: number;
+  type: 'ask' | 'approve' | 'decline' | 'stop';
+  text?: string;
+  ref?: string;
+}
+
+/** The hand-off calls (a transport may leave them out: no hand-off then). */
+export interface HandoffTransport {
+  startHandoff(): Promise<HandoffStart>;
+  syncHandoff(id: string, state: unknown, after: number): Promise<{ commands: HandoffCommand[]; phone: boolean }>;
+  endHandoff(id: string): Promise<void>;
+}
+
 export class SecretaryError extends Error {
   constructor(message: string, readonly status: number, readonly code: string) {
     super(message);
@@ -32,7 +55,7 @@ function visitorID(): string {
   }
 }
 
-export class HttpTransport implements Transport {
+export class HttpTransport implements Transport, HandoffTransport {
   private token = '';
   private tokenAt = 0;
 
@@ -71,5 +94,17 @@ export class HttpTransport implements Transport {
 
   turn(req: TurnRequest, signal: AbortSignal): Promise<TurnResult> {
     return this.call('POST', '/turn', req, signal);
+  }
+
+  startHandoff(): Promise<HandoffStart> {
+    return this.call('POST', '/handoff', undefined);
+  }
+
+  syncHandoff(id: string, state: unknown, after: number): Promise<{ commands: HandoffCommand[]; phone: boolean }> {
+    return this.call('POST', '/handoff/' + encodeURIComponent(id), { state, after });
+  }
+
+  async endHandoff(id: string): Promise<void> {
+    await this.call('POST', '/handoff/' + encodeURIComponent(id) + '/end', undefined);
   }
 }
