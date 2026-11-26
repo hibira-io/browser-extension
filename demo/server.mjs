@@ -108,6 +108,13 @@ createServer(async (req, res) => {
     const session = { token: 'sst_demo', email: 'demo@example.com', expires_at: new Date(Date.now() + 30 * 864e5).toISOString() };
     return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(session));
   }
+  // Pictures for trying the look tool: one from this site, one from another.
+  if (url.pathname === '/pic.svg') {
+    return res.writeHead(200, { 'Content-Type': 'image/svg+xml' }).end('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="100"><rect width="160" height="100" fill="#2457c5"/><text x="20" y="60" fill="#fff" font-size="28">Q3 +12%</text></svg>');
+  }
+  if (url.pathname === '/pictures') {
+    return res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end('<!doctype html><meta charset="utf-8"><title>Pictures</title><img alt="Sales chart" src="/pic.svg" width="160" height="100"><img alt="Partner chart" src="http://shop.example/pic.svg" width="160" height="100">');
+  }
   // A file field, for trying attach_file (Hibi's folder tools).
   if (url.pathname === '/upload') {
     return res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(`<!doctype html><meta charset="utf-8"><title>Upload</title><form><label for="doc">Invoice</label><input id="doc" name="doc" type="file"><button>Send</button></form><p id="got"></p><script>doc.onchange=async()=>{got.textContent=doc.files[0].name+' '+doc.files[0].size+' '+(await doc.files[0].text()).slice(0,20)}</script>`);

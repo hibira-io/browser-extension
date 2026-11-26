@@ -138,6 +138,7 @@ const STEP_KEY: Record<string, StringKey> = {
   navigate: 'stepNavigate',
   go_back: 'stepBack',
   point: 'stepPoint',
+  look: 'stepLook',
   talk_to_person: 'stepPerson',
 };
 

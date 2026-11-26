@@ -4,7 +4,7 @@
 // The state is saved before every action, so a click that loads a new
 // page (a form post, a link) carries on after the load.
 
-import { repairInput, resultText, toolSpecs } from './tools';
+import { isImageResult, repairInput, resultText, toolSpecs } from './tools';
 import type { Block, Message, Summary, Tool, TurnResult } from './types';
 
 /** Tool calls one question may make. */
@@ -81,9 +81,14 @@ export function trimHistory(ms: Message[], max = MAX_HISTORY): Message[] {
   return ms.slice(i);
 }
 
+/** The messages without their images (each says it was seen). */
+export function dropImages(ms: Message[]): Message[] {
+  return ms.map((m) => (m.content.some((b) => b.type === 'image') ? { ...m, content: m.content.map((b) => (b.type === 'image' ? { type: 'text' as const, text: '(an image you looked at earlier)' } : b)) } : m));
+}
+
 /** Asks a new question. */
 export async function ask(state: RunState, question: string, h: RunHooks): Promise<RunState> {
-  const s: RunState = { messages: [...trimHistory(state.messages, MAX_HISTORY - 2), { role: 'user', content: [{ type: 'text', text: question }] }], taskId: '' };
+  const s: RunState = { messages: [...dropImages(trimHistory(state.messages, MAX_HISTORY - 2)), { role: 'user', content: [{ type: 'text', text: question }] }], taskId: '' };
   h.onMessages(s.messages);
   return loop(s, h);
 }
@@ -136,6 +141,7 @@ async function loop(s: RunState, h: RunHooks, carried?: { approved: number; decl
       return s;
     }
     const results: Block[] = [];
+    const images: Block[] = [];
     for (let k = 0; k < uses.length; k++) {
       const u = uses[k];
       steps++;
@@ -175,7 +181,11 @@ async function loop(s: RunState, h: RunHooks, carried?: { approved: number; decl
         }
         // A page load during the tool picks up from here (resume).
         h.save({ messages: s.messages, taskId: s.taskId, pending: { results: [...results], current: u.id ?? '', rest: uses.slice(k + 1).map((x) => x.id ?? ''), url: h.page().url, decisions: { ...decisions } } });
-        content = resultText(await tool.run(input, { signal }));
+        const out = await tool.run(input, { signal });
+        if (isImageResult(out)) {
+          images.push({ type: 'image', media_type: out.image.media_type, data: out.image.data });
+          content = out.text;
+        } else content = resultText(out);
         h.onStep({ ...step, state: 'done' });
       } catch (err) {
         if ((err as Error).name === 'AbortError') throw err;
@@ -185,7 +195,9 @@ async function loop(s: RunState, h: RunHooks, carried?: { approved: number; decl
       }
       results.push({ type: 'tool_result', tool_use_id: u.id, content, is_error: isError || undefined });
     }
-    s.messages = [...s.messages, { role: 'user', content: results }];
+    // Images go after the tool results, in the same message; earlier ones
+    // are dropped, so each is sent (and kept in the tab) once.
+    s.messages = [...(images.length ? dropImages(s.messages) : s.messages), { role: 'user', content: [...results, ...images] }];
     h.onMessages(s.messages);
   }
 }

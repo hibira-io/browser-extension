@@ -2,7 +2,7 @@ import type { FromSchema, ObjectSchema } from './schema';
 
 /** One part of a turn, as the server speaks it. */
 export interface Block {
-  type: 'text' | 'tool_use' | 'tool_result';
+  type: 'text' | 'tool_use' | 'tool_result' | 'image';
   text?: string;
   id?: string;
   name?: string;
@@ -10,6 +10,9 @@ export interface Block {
   tool_use_id?: string;
   content?: string;
   is_error?: boolean;
+  /** An image block: its type (image/jpeg) and base64 data. */
+  media_type?: string;
+  data?: string;
 }
 
 export interface Message {
