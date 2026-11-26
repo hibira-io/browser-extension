@@ -31,7 +31,7 @@ export function folderTools(page: ExtensionPage): Tool[] {
     },
     {
       name: 'attach_file',
-      description: 'Puts a file from the chosen folder into a file field on the page (an <input type=file>; read_page may show it as a textbox labelled for the file), by its ref and the file path from list_files. Submitting the form afterwards waits for approval as usual.',
+      description: 'Puts a file from the chosen folder into a file field on the page (role file in read_page), by its ref and the file path from list_files. Submitting the form afterwards waits for approval as usual.',
       inputSchema: {
         type: 'object',
         properties: { ref: { type: 'string', description: 'The file field from read_page.' }, path: { type: 'string', description: 'Path from list_files.' } },

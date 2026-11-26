@@ -592,6 +592,11 @@ export class Panel {
     this.note(this.tr('hello', { name: this.o.name }), 'ai');
   }
 
+  /** Puts the panel back after a single-page app replaced the body. */
+  remount() {
+    if (!this.host.isConnected) (this.o.mount ?? document.body).appendChild(this.host);
+  }
+
   destroy() {
     this.host.remove();
   }

@@ -103,6 +103,7 @@ function roleOf(el: Element): string {
     if (t === 'checkbox' || t === 'radio') return t;
     if (t === 'submit' || t === 'button' || t === 'reset' || t === 'image') return 'button';
     if (t === 'search') return 'searchbox';
+    if (t === 'file') return 'file';
     return 'textbox';
   }
   if ((el as HTMLElement).isContentEditable) return 'textbox';
@@ -119,7 +120,7 @@ function valueOf(el: Element): string {
   if (el instanceof HTMLSelectElement) return squash(Array.from(el.selectedOptions).map((o) => o.text).join(', '));
   if (el instanceof HTMLInputElement) {
     if (el.type === 'checkbox' || el.type === 'radio') return '';
-    if (el.type === 'file') return el.files?.length ? `${el.files.length} file(s)` : '';
+    if (el.type === 'file') return el.files?.length ? squash(Array.from(el.files).map((f) => f.name).join(', '), 120) : '';
     return squash(el.value, 120);
   }
   if (el instanceof HTMLTextAreaElement) return squash(el.value, 200);
