@@ -1,0 +1,104 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "繰り返しのウェブ作業を Hibi に。サイトごとにオンにでき、送信の前には必ずあなたの承認を待ちます。"
+  },
+  "actionTitle": {
+    "message": "Hibi を開く"
+  },
+  "askPlaceholder": {
+    "message": "このページで何をしますか？"
+  },
+  "send": {
+    "message": "送信"
+  },
+  "stop": {
+    "message": "停止"
+  },
+  "account": {
+    "message": "アカウント"
+  },
+  "signInIntro": {
+    "message": "Hibi は選んだサイトで繰り返しの作業をこなします。フォーム入力、ページ間の転記、リストの順番クリックなど。Hibira アカウントでサインインして始めましょう。無料プランには毎月のタスクが含まれます。"
+  },
+  "signIn": {
+    "message": "Hibira でサインイン"
+  },
+  "unsupportedPage": {
+    "message": "このタブでウェブサイトを開くと、ここで Hibi を使えます。"
+  },
+  "siteOffIntro": {
+    "message": "$1 では Hibi はオフです。オンにすると Hibi がこのサイトを読み取り操作できます。いつでもオフにできます。"
+  },
+  "turnOn": {
+    "message": "$1 でオンにする"
+  },
+  "turnOffSite": {
+    "message": "このサイトでオフにする"
+  },
+  "managePlan": {
+    "message": "プランと使用量"
+  },
+  "signOut": {
+    "message": "サインアウト"
+  },
+  "hello": {
+    "message": "こんにちは、Hibi です。$1 で何をするか教えてください。サインインやロボット確認はお任せし、送信前には必ず確認します。"
+  },
+  "approve": {
+    "message": "承認"
+  },
+  "decline": {
+    "message": "今はしない"
+  },
+  "approved": {
+    "message": "承認済み"
+  },
+  "declined": {
+    "message": "送信しませんでした"
+  },
+  "working": {
+    "message": "作業中…"
+  },
+  "tasksLeft": {
+    "message": "今月の残り $1／$2 タスク"
+  },
+  "tasksExtra": {
+    "message": "追加タスクは 1 件 US$$$1"
+  },
+  "allowanceUsed": {
+    "message": "今月のタスクを使い切りました。「プランと使用量」から追加できます。"
+  },
+  "useOnSite": {
+    "message": "このサイトで Hibi を使う"
+  },
+  "needInvoke": {
+    "message": "このタブで Hibi を使うには、ツールバーの Hibi ボタンをクリックするか、Alt+Shift+H を押すか、ページを右クリックして「このサイトで Hibi を使う」を選んでください。"
+  },
+  "actRead": {
+    "message": "ページを読み取りました"
+  },
+  "actClick": {
+    "message": "「$1」をクリック"
+  },
+  "actType": {
+    "message": "「$1」に入力"
+  },
+  "actSelect": {
+    "message": "「$1」を選択"
+  },
+  "actScroll": {
+    "message": "スクロール"
+  },
+  "signInAgain": {
+    "message": "もう一度サインインしてください。"
+  },
+  "actNavigate": {
+    "message": "ページを開きました"
+  },
+  "signInFailed": {
+    "message": "サインインが完了しませんでした。もう一度お試しください。"
+  }
+}

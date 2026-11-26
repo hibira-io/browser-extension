@@ -1,0 +1,104 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "반복되는 웹 작업을 Hibi에게 맡기세요. 사이트마다 켜고, 제출 전에는 항상 승인을 기다립니다."
+  },
+  "actionTitle": {
+    "message": "Hibi 열기"
+  },
+  "askPlaceholder": {
+    "message": "이 페이지에서 무엇을 할까요?"
+  },
+  "send": {
+    "message": "보내기"
+  },
+  "stop": {
+    "message": "중지"
+  },
+  "account": {
+    "message": "계정"
+  },
+  "signInIntro": {
+    "message": "Hibi는 선택한 사이트에서 반복 작업을 처리합니다. 양식 입력, 페이지 간 정보 옮기기, 목록 하나씩 클릭하기 등. Hibira 계정으로 로그인해 시작하세요. 무료 플랜에 매월 작업이 포함됩니다."
+  },
+  "signIn": {
+    "message": "Hibira로 로그인"
+  },
+  "unsupportedPage": {
+    "message": "이 탭에서 웹사이트를 열면 여기서 Hibi를 쓸 수 있습니다."
+  },
+  "siteOffIntro": {
+    "message": "$1에서 Hibi가 꺼져 있습니다. 켜면 Hibi가 이 사이트를 읽고 작업할 수 있으며 언제든 끌 수 있습니다."
+  },
+  "turnOn": {
+    "message": "$1에서 켜기"
+  },
+  "turnOffSite": {
+    "message": "이 사이트에서 끄기"
+  },
+  "managePlan": {
+    "message": "플랜 및 사용량"
+  },
+  "signOut": {
+    "message": "로그아웃"
+  },
+  "hello": {
+    "message": "안녕하세요, Hibi입니다. $1에서 무엇을 할지 알려 주세요. 로그인과 로봇 확인은 직접 해 주시고, 제출 전에는 꼭 여쭤봅니다."
+  },
+  "approve": {
+    "message": "승인"
+  },
+  "decline": {
+    "message": "나중에"
+  },
+  "approved": {
+    "message": "승인됨"
+  },
+  "declined": {
+    "message": "제출하지 않음"
+  },
+  "working": {
+    "message": "작업 중…"
+  },
+  "tasksLeft": {
+    "message": "이번 달 $1/$2 작업 남음"
+  },
+  "tasksExtra": {
+    "message": "추가 작업 1건당 US$$$1"
+  },
+  "allowanceUsed": {
+    "message": "이번 달 작업을 모두 사용했습니다. 플랜 및 사용량에서 추가하세요."
+  },
+  "useOnSite": {
+    "message": "이 사이트에서 Hibi 사용"
+  },
+  "needInvoke": {
+    "message": "이 탭에서 Hibi를 쓰려면 도구 모음의 Hibi 버튼을 누르거나 Alt+Shift+H를 누르거나, 페이지를 오른쪽 클릭해 \"이 사이트에서 Hibi 사용\"을 선택하세요."
+  },
+  "actRead": {
+    "message": "페이지 읽음"
+  },
+  "actClick": {
+    "message": "\"$1\" 클릭"
+  },
+  "actType": {
+    "message": "\"$1\" 입력"
+  },
+  "actSelect": {
+    "message": "\"$1\" 선택"
+  },
+  "actScroll": {
+    "message": "스크롤"
+  },
+  "signInAgain": {
+    "message": "다시 로그인해 주세요."
+  },
+  "actNavigate": {
+    "message": "페이지를 열었습니다"
+  },
+  "signInFailed": {
+    "message": "로그인이 완료되지 않았습니다. 다시 시도해 주세요."
+  }
+}
