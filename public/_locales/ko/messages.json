@@ -100,5 +100,11 @@
   },
   "signInFailed": {
     "message": "로그인이 완료되지 않았습니다. 다시 시도해 주세요."
+  },
+  "confirmClick": {
+    "message": "\"$1\" 누르기"
+  },
+  "confirmEnter": {
+    "message": "\"$2\"에 \"$1\" 입력 후 Enter 누르기"
   }
 }

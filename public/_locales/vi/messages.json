@@ -1,0 +1,110 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "Giao việc web lặp đi lặp lại cho Hibi. Bật cho từng trang web; mọi lần gửi đều chờ bạn duyệt."
+  },
+  "actionTitle": {
+    "message": "Mở Hibi"
+  },
+  "askPlaceholder": {
+    "message": "Bạn muốn làm gì trên trang này?"
+  },
+  "send": {
+    "message": "Gửi"
+  },
+  "stop": {
+    "message": "Dừng"
+  },
+  "account": {
+    "message": "Tài khoản"
+  },
+  "signInIntro": {
+    "message": "Hibi làm giúp những việc lặp lại trên các trang bạn chọn: điền biểu mẫu, chép thông tin giữa các trang, bấm qua từng dòng trong danh sách. Đăng nhập bằng tài khoản Hibira để bắt đầu. Gói miễn phí có sẵn tác vụ mỗi tháng."
+  },
+  "signIn": {
+    "message": "Đăng nhập bằng Hibira"
+  },
+  "unsupportedPage": {
+    "message": "Mở một trang web trong thẻ này để dùng Hibi tại đây."
+  },
+  "siteOffIntro": {
+    "message": "Hibi đang tắt trên $1. Bật lên để Hibi đọc và thao tác trên trang này. Bạn có thể tắt bất cứ lúc nào."
+  },
+  "turnOn": {
+    "message": "Bật trên $1"
+  },
+  "turnOffSite": {
+    "message": "Tắt cho trang này"
+  },
+  "managePlan": {
+    "message": "Gói và mức dùng"
+  },
+  "signOut": {
+    "message": "Đăng xuất"
+  },
+  "hello": {
+    "message": "Chào bạn, mình là Hibi. Cho mình biết cần làm gì trên $1. Trang đăng nhập và bước xác minh robot mình để bạn tự làm, và mình luôn hỏi trước khi gửi."
+  },
+  "approve": {
+    "message": "Duyệt"
+  },
+  "decline": {
+    "message": "Để sau"
+  },
+  "approved": {
+    "message": "Đã duyệt"
+  },
+  "declined": {
+    "message": "Chưa gửi"
+  },
+  "working": {
+    "message": "Đang làm…"
+  },
+  "tasksLeft": {
+    "message": "Còn $1/$2 tác vụ trong tháng này"
+  },
+  "tasksExtra": {
+    "message": "Tác vụ thêm: US$$$1 mỗi tác vụ"
+  },
+  "allowanceUsed": {
+    "message": "Bạn đã dùng hết tác vụ của tháng này. Mở \"Gói và mức dùng\" để thêm."
+  },
+  "useOnSite": {
+    "message": "Dùng Hibi trên trang này"
+  },
+  "needInvoke": {
+    "message": "Để dùng Hibi trong thẻ này, bấm nút Hibi trên thanh công cụ, nhấn Alt+Shift+H, hoặc nhấp chuột phải vào trang và chọn \"Dùng Hibi trên trang này\"."
+  },
+  "actRead": {
+    "message": "Đọc trang"
+  },
+  "actClick": {
+    "message": "Đã bấm \"$1\""
+  },
+  "actType": {
+    "message": "Đã điền \"$1\""
+  },
+  "actSelect": {
+    "message": "Đã chọn \"$1\""
+  },
+  "actScroll": {
+    "message": "Đã cuộn trang"
+  },
+  "signInAgain": {
+    "message": "Vui lòng đăng nhập lại."
+  },
+  "actNavigate": {
+    "message": "Đã mở một trang"
+  },
+  "signInFailed": {
+    "message": "Chưa đăng nhập xong. Vui lòng thử lại."
+  },
+  "confirmClick": {
+    "message": "Bấm \"$1\""
+  },
+  "confirmEnter": {
+    "message": "Nhập \"$1\" vào \"$2\" rồi nhấn Enter"
+  }
+}

@@ -184,11 +184,21 @@ function ask(card: HTMLElement, yes: string, no: string): Promise<boolean> {
   });
 }
 
+// The core words approval summaries in English; show them in the panel's
+// language.
+function localSummary(text: string): string {
+  const click = text.match(/^Click "(.*)"$/s);
+  if (click) return chrome.i18n.getMessage('confirmClick', [click[1]!]);
+  const enter = text.match(/^Type "(.*)" into "(.*)" and press Enter$/s);
+  if (enter) return chrome.i18n.getMessage('confirmEnter', [enter[1]!, enter[2]!]);
+  return text;
+}
+
 function approvalCard(summary: Summary): Promise<boolean> {
   const card = document.createElement('div');
   card.className = 'msg approval';
   const title = document.createElement('strong');
-  title.textContent = summary.text;
+  title.textContent = localSummary(summary.text);
   card.append(title);
   if (summary.fields?.length) {
     const ul = document.createElement('ul');

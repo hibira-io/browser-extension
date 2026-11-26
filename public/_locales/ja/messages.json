@@ -100,5 +100,11 @@
   },
   "signInFailed": {
     "message": "サインインが完了しませんでした。もう一度お試しください。"
+  },
+  "confirmClick": {
+    "message": "「$1」を押す"
+  },
+  "confirmEnter": {
+    "message": "「$2」に「$1」と入力して Enter を押す"
   }
 }

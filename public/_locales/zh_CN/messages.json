@@ -100,5 +100,11 @@
   },
   "signInFailed": {
     "message": "登录没有完成，请再试一次。"
+  },
+  "confirmClick": {
+    "message": "点击“$1”"
+  },
+  "confirmEnter": {
+    "message": "在“$2”中输入“$1”并按回车"
   }
 }
