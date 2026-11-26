@@ -47,9 +47,6 @@
   "hello": {
     "message": "嗨，我是 Hibi。告訴我要在 $1 做什麼。登入頁和機器人驗證由你自己來，送出前我一定先問你。"
   },
-  "approveTitle": {
-    "message": "要送出「$1」嗎？"
-  },
   "approve": {
     "message": "同意"
   },
@@ -61,15 +58,6 @@
   },
   "declined": {
     "message": "未送出"
-  },
-  "stepCap": {
-    "message": "這個任務已用了 $1 步，繼續會算成另一個任務。"
-  },
-  "continue": {
-    "message": "繼續"
-  },
-  "stopHere": {
-    "message": "到此為止"
   },
   "working": {
     "message": "處理中…"
@@ -103,5 +91,11 @@
   },
   "actScroll": {
     "message": "捲動頁面"
+  },
+  "signInAgain": {
+    "message": "請重新登入。"
+  },
+  "actNavigate": {
+    "message": "開啟了頁面"
   }
 }

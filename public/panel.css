@@ -26,7 +26,10 @@ main { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: 
 .msg.hibi { background: var(--card); align-self: flex-start; }
 .msg.me { background: var(--me); align-self: flex-end; }
 .msg.action { align-self: flex-start; color: var(--muted); font-size: 12px; padding: 2px 4px; }
-.msg.action::before { content: "✓ "; color: var(--ok); }
+.msg.action::before { content: "… "; }
+.msg.action[data-state="done"]::before { content: "✓ "; color: var(--ok); }
+.msg.action[data-state="declined"], .msg.action[data-state="refused"], .msg.action[data-state="failed"] { text-decoration: line-through; }
+.msg.action[data-state="declined"]::before, .msg.action[data-state="refused"]::before, .msg.action[data-state="failed"]::before { content: "✕ "; }
 .msg.note { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
 .msg.approval { align-self: stretch; max-width: none; background: var(--card); border: 1px solid var(--brand); }
 .msg.approval ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }

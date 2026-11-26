@@ -1,13 +1,14 @@
 // The side panel: Hibi's conversation for the active tab, the per-site
 // switch, sign-in and this month's allowance.
 
-import { Agent } from '../core/agent';
-import type { Approval, Usage } from '../core/types';
+import { HttpTransport, SecretaryError } from '../../vendor/secretary/core/api';
+import { ask as askCore, type RunState, type Step } from '../../vendor/secretary/core/runner';
+import { builtinTools } from '../../vendor/secretary/core/tools';
+import type { Message, Summary, Tool, TurnResult } from '../../vendor/secretary/core/types';
 import { currentSession, signIn, signOut } from '../chrome/auth';
 import { BASE } from '../chrome/config';
-import { TabRunner } from '../chrome/runner';
+import { ExtensionPage } from '../chrome/page';
 import { isOn, originPattern, turnOff, turnOn } from '../chrome/sites';
-import { HibiraTransport, HttpError } from '../chrome/transport';
 
 const t = (key: string, ...subs: string[]): string => chrome.i18n.getMessage(key, subs) || key;
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -27,8 +28,17 @@ sendBtn.title = t('send');
 stopBtn.title = t('stop');
 $('menu').title = t('account');
 
-const transport = new HibiraTransport(async () => (await currentSession())?.token ?? null);
-let agent: Agent | null = null;
+const transport = new HttpTransport(new URL('/secretary/v1', BASE).toString(), {
+  session: async () => {
+    const s = await currentSession();
+    if (!s) throw new SecretaryError(t('signInAgain'), 401, 'secretary_session');
+    return s.token;
+  },
+});
+let page: ExtensionPage | null = null;
+let tools: Tool[] = [];
+let state: RunState = { messages: [], taskId: '' };
+let shown = 0;
 let agentKey = '';
 let running: AbortController | null = null;
 let tab: chrome.tabs.Tab | null = null;
@@ -64,7 +74,9 @@ async function refresh(): Promise<void> {
   form.hidden = false;
   if (agentKey !== `${tab?.id}|${origin}`) {
     agentKey = `${tab?.id}|${origin}`;
-    agent = null;
+    page = null;
+    state = { messages: [], taskId: '' };
+    shown = 0;
     log.replaceChildren();
     say('hibi', t('hello', new URL(url).host));
   }
@@ -172,15 +184,15 @@ function ask(card: HTMLElement, yes: string, no: string): Promise<boolean> {
   });
 }
 
-function approvalCard(a: Approval): Promise<boolean> {
+function approvalCard(summary: Summary): Promise<boolean> {
   const card = document.createElement('div');
   card.className = 'msg approval';
   const title = document.createElement('strong');
-  title.textContent = t('approveTitle', a.label);
+  title.textContent = summary.text;
   card.append(title);
-  if (a.summary.length) {
+  if (summary.fields?.length) {
     const ul = document.createElement('ul');
-    for (const line of a.summary) {
+    for (const line of summary.fields) {
       const li = document.createElement('li');
       li.textContent = line;
       ul.append(li);
@@ -191,26 +203,70 @@ function approvalCard(a: Approval): Promise<boolean> {
   return ask(card, t('approve'), t('decline'));
 }
 
-function activity(tool: string, label: string): string {
-  switch (tool) {
+const stepLines = new Map<string, HTMLElement>();
+
+function activity(step: Step): string {
+  const ref = typeof step.input.ref === 'string' ? step.input.ref : '';
+  const name = (ref && refNames.get(ref)) || '';
+  switch (step.tool) {
     case 'read_page':
+    case 'find':
       return t('actRead');
     case 'click':
-      return t('actClick', label);
-    case 'type_text':
-      return t('actType', label);
-    case 'select_option':
-      return t('actSelect', label);
+      return t('actClick', name);
+    case 'type':
+      return t('actType', name);
+    case 'select':
+      return t('actSelect', String(step.input.value ?? step.input.option ?? ''));
     case 'scroll':
       return t('actScroll');
+    case 'navigate':
+    case 'go_back':
+      return t('actNavigate');
     default:
-      return tool;
+      return step.tool;
   }
 }
 
-function showUsage(u: Usage): void {
-  const left = Math.max(0, u.tasksIncluded - u.tasksUsed);
-  meter.textContent = left > 0 || !u.canExceed ? t('tasksLeft', String(left), String(u.tasksIncluded)) : t('tasksExtra', (u.extraTaskCents / 100).toFixed(2));
+/** refNames remembers control names from the last page read, for activity lines. */
+const refNames = new Map<string, string>();
+
+function rememberRefs(messages: Message[]): void {
+  for (const m of messages) {
+    for (const b of m.content) {
+      if (b.type !== 'tool_result' || !b.content) continue;
+      for (const line of b.content.split('\n')) {
+        const hit = line.match(/\[(e\d+)\] [^"]*"([^"]*)"/);
+        if (hit?.[1] && hit[2]) refNames.set(hit[1], hit[2]);
+      }
+    }
+  }
+}
+
+function onStep(step: Step): void {
+  if (step.state === 'waiting') return;
+  let line = stepLines.get(step.id);
+  if (!line) {
+    line = say('action', activity(step));
+    stepLines.set(step.id, line);
+  }
+  line.dataset.state = step.state;
+  if (step.state === 'refused' || step.state === 'failed') line.title = step.error ?? '';
+}
+
+function onMessages(messages: Message[]): void {
+  rememberRefs(messages.slice(shown));
+  for (const m of messages.slice(shown)) {
+    if (m.role !== 'assistant') continue;
+    for (const b of m.content) if (b.type === 'text' && b.text?.trim() && b.text !== '…') say('hibi', b.text);
+  }
+  shown = messages.length;
+}
+
+function showUsage(out: TurnResult): void {
+  const { used, included, extra } = out.tasks;
+  const left = Math.max(0, included - used);
+  meter.textContent = left > 0 ? t('tasksLeft', String(left), String(included)) : t('tasksExtra', String(extra));
 }
 
 form.addEventListener('submit', (e) => {
@@ -235,33 +291,37 @@ async function run(): Promise<void> {
   if (!origin) return;
   input.value = '';
   say('me', text);
-  if (!agent) {
-    agent = new Agent(
-      transport,
-      new TabRunner(tab.id, origin),
-      {
-        text: (s) => void say('hibi', s),
-        action: (call, result) => void say('action', activity(call.name, result.label ?? '')),
-        approve: approvalCard,
-        continueTask: (step, cap) => {
-          const card = say('note', t('stepCap', String(cap)));
-          return ask(card, t('continue'), t('stopHere'));
-        },
-        usage: showUsage,
-      },
-      chrome.i18n.getUILanguage(),
-    );
+  if (!page) {
+    page = new ExtensionPage(tab.id, origin);
+    tools = builtinTools(page).filter((x) => x.name !== 'point');
   }
+  await page.refresh();
+  const current = page;
   running = new AbortController();
   sendBtn.hidden = true;
   stopBtn.hidden = false;
   thinking = say('note', t('working'));
   try {
-    await agent.ask(text, running.signal);
+    shown = state.messages.length + 1;
+    state = await askCore(state, text, {
+      transport,
+      tools: () => tools,
+      auto: () => false,
+      page: () => current.current,
+      locale: () => chrome.i18n.getUILanguage(),
+      approve: (_tool, _input, summary) => approvalCard(summary),
+      onMessages,
+      onStep,
+      onTurn: showUsage,
+      save: (s) => {
+        state = { messages: s.messages, taskId: s.taskId };
+      },
+      signal: running.signal,
+    });
   } catch (e) {
     if ((e as Error).name !== 'AbortError') {
-      if (e instanceof HttpError && e.status === 401) await signOut();
-      if (e instanceof HttpError && e.code === 'allowance_used') {
+      if (e instanceof SecretaryError && e.status === 401) await signOut();
+      if (e instanceof SecretaryError && e.code === 'secretary_limit') {
         say('note', t('allowanceUsed'));
       } else say('note', (e as Error).message);
     }

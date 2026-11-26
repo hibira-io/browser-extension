@@ -45,28 +45,27 @@ function orderPage(o, saved) {
 <button type="submit">Save shipment</button></form><p><a href="/orders">← All orders</a></p>`);
 }
 
-// The scripted stand-in for the model: one fixed chore, driven by the refs
-// in the latest page read.
+// The scripted stand-in for the model, speaking the Secretary API's turn
+// format: one fixed chore, driven by the refs in the latest page read.
 function scriptedTurn(req) {
   const step = req.messages.filter((m) => m.role === 'assistant').length;
-  const lastRead = [...req.messages].reverse().flatMap((m) => m.content).find((b) => b.type === 'tool_result' && b.content.startsWith('Page:'));
-  const ref = (label) => Number(lastRead?.content.split('\n').find((l) => l.startsWith('[') && l.includes(label))?.match(/^\[(\d+)\]/)?.[1]);
-  const use = (name, input, n = step) => ({ type: 'tool_use', id: `t${n}_${name}`, name, input });
+  const lastRead = [...req.messages].reverse().flatMap((m) => m.content).find((b) => b.type === 'tool_result' && String(b.content).startsWith('Page:'));
+  const ref = (label) => lastRead?.content.split('\n').find((l) => l.includes(label))?.match(/\[(e\d+)\]/)?.[1];
+  const use = (name, input) => ({ type: 'tool_use', id: `t${step}_${name}`, name, input });
   const plan = [
     () => [{ type: 'text', text: 'Opening order #1042.' }, use('read_page', {})],
     () => [use('click', { ref: ref('"#1042"') })],
     () => [use('read_page', {})],
-    () => [use('select_option', { ref: ref('"Carrier"'), option: 'DHL' }), use('type_text', { ref: ref('"Tracking number"'), text: 'JD014600' })],
+    () => [use('select', { ref: ref('"Carrier"'), value: 'DHL' }), use('type', { ref: ref('"Tracking number"'), text: 'JD014600' })],
     () => [{ type: 'text', text: 'Filled in DHL and JD014600. Saving needs your OK.' }, use('click', { ref: ref('"Save shipment"') })],
   ];
   const content = step < plan.length ? plan[step]() : [{ type: 'text', text: 'Order #1042 is marked shipped with DHL JD014600. Shall I do #1043 and #1044 the same way?' }];
   return {
-    taskId: 'task_demo',
-    content,
-    stopReason: content.some((b) => b.type === 'tool_use') ? 'tool_use' : 'end_turn',
-    step: step + 1,
-    stepCap: 20,
-    usage: { tasksUsed: 3, tasksIncluded: 30, extraTaskCents: 5, canExceed: false },
+    message: { role: 'assistant', content },
+    stop_reason: content.some((b) => b.type === 'tool_use') ? 'tool_use' : 'end_turn',
+    task_id: 'task_demo',
+    units: 1,
+    tasks: { used: 3, included: 30, extra: 0 },
   };
 }
 
@@ -80,13 +79,17 @@ function readBody(req) {
 
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
-  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'POST, DELETE' };
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, DELETE' };
   if (req.method === 'OPTIONS') return res.writeHead(204, cors).end();
-  if (url.pathname === '/api/secretary/v1/extension/turn' && req.method === 'POST') {
+  if (url.pathname === '/secretary/v1/me') {
+    const me = { workspace: 'Personal', auto_mode: false, branding: true, user: 'demo@example.com', enabled: true, tasks: { used: 3, included: 30, extra: 0 } };
+    return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(me));
+  }
+  if (url.pathname === '/secretary/v1/turn' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req));
     return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(scriptedTurn(body)));
   }
-  if (url.pathname === '/api/secretary/v1/extension/session') return res.writeHead(204, cors).end();
+  if (url.pathname === '/secretary/v1/extension/session') return res.writeHead(204, cors).end();
   if (url.pathname === '/secretary/extension/connect') {
     const back = new URL(url.searchParams.get('redirect_uri'));
     back.hash = new URLSearchParams({ token: 'demo', state: url.searchParams.get('state') ?? '', email: 'demo@example.com', expires_in: '86400' }).toString();

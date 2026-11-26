@@ -44,7 +44,7 @@ export async function signOut(): Promise<void> {
   const s = await currentSession();
   await chrome.storage.local.remove(KEY);
   if (s) {
-    await fetch(new URL('/api/secretary/v1/extension/session', BASE), {
+    await fetch(new URL('/secretary/v1/extension/session', BASE), {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${s.token}` },
     }).catch(() => undefined);

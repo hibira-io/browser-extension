@@ -47,9 +47,6 @@
   "hello": {
     "message": "Hi, I'm Hibi. Tell me what to do on $1. I leave sign-in pages and robot checks to you, and I ask before anything is submitted."
   },
-  "approveTitle": {
-    "message": "Submit \"$1\"?"
-  },
   "approve": {
     "message": "Approve"
   },
@@ -61,15 +58,6 @@
   },
   "declined": {
     "message": "Not submitted"
-  },
-  "stepCap": {
-    "message": "This task has used $1 steps. Going on counts as another task."
-  },
-  "continue": {
-    "message": "Keep going"
-  },
-  "stopHere": {
-    "message": "Stop here"
   },
   "working": {
     "message": "Working…"
@@ -103,5 +91,11 @@
   },
   "actScroll": {
     "message": "Scrolled"
+  },
+  "signInAgain": {
+    "message": "Please sign in again."
+  },
+  "actNavigate": {
+    "message": "Opened a page"
   }
 }

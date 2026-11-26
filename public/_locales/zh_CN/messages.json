@@ -47,9 +47,6 @@
   "hello": {
     "message": "嗨，我是 Hibi。告诉我要在 $1 做什么。登录页和机器人验证由你自己来，提交前我一定先问你。"
   },
-  "approveTitle": {
-    "message": "要提交「$1」吗？"
-  },
   "approve": {
     "message": "同意"
   },
@@ -61,15 +58,6 @@
   },
   "declined": {
     "message": "未提交"
-  },
-  "stepCap": {
-    "message": "这个任务已用了 $1 步，继续会算作另一个任务。"
-  },
-  "continue": {
-    "message": "继续"
-  },
-  "stopHere": {
-    "message": "到此为止"
   },
   "working": {
     "message": "处理中…"
@@ -103,5 +91,11 @@
   },
   "actScroll": {
     "message": "滚动页面"
+  },
+  "signInAgain": {
+    "message": "请重新登录。"
+  },
+  "actNavigate": {
+    "message": "打开了页面"
   }
 }

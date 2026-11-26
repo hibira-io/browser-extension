@@ -47,9 +47,6 @@
   "hello": {
     "message": "こんにちは、Hibi です。$1 で何をするか教えてください。サインインやロボット確認はお任せし、送信前には必ず確認します。"
   },
-  "approveTitle": {
-    "message": "「$1」を送信しますか？"
-  },
   "approve": {
     "message": "承認"
   },
@@ -61,15 +58,6 @@
   },
   "declined": {
     "message": "送信しませんでした"
-  },
-  "stepCap": {
-    "message": "このタスクは $1 ステップに達しました。続けると別のタスクとして数えます。"
-  },
-  "continue": {
-    "message": "続ける"
-  },
-  "stopHere": {
-    "message": "ここで止める"
   },
   "working": {
     "message": "作業中…"
@@ -103,5 +91,11 @@
   },
   "actScroll": {
     "message": "スクロール"
+  },
+  "signInAgain": {
+    "message": "もう一度サインインしてください。"
+  },
+  "actNavigate": {
+    "message": "ページを開きました"
   }
 }

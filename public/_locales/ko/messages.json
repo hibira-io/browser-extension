@@ -47,9 +47,6 @@
   "hello": {
     "message": "안녕하세요, Hibi입니다. $1에서 무엇을 할지 알려 주세요. 로그인과 로봇 확인은 직접 해 주시고, 제출 전에는 꼭 여쭤봅니다."
   },
-  "approveTitle": {
-    "message": "\"$1\"을(를) 제출할까요?"
-  },
   "approve": {
     "message": "승인"
   },
@@ -61,15 +58,6 @@
   },
   "declined": {
     "message": "제출하지 않음"
-  },
-  "stepCap": {
-    "message": "이 작업이 $1단계를 사용했습니다. 계속하면 다른 작업으로 계산됩니다."
-  },
-  "continue": {
-    "message": "계속"
-  },
-  "stopHere": {
-    "message": "여기서 중지"
   },
   "working": {
     "message": "작업 중…"
@@ -103,5 +91,11 @@
   },
   "actScroll": {
     "message": "스크롤"
+  },
+  "signInAgain": {
+    "message": "다시 로그인해 주세요."
+  },
+  "actNavigate": {
+    "message": "페이지를 열었습니다"
   }
 }

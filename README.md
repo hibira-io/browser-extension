@@ -14,7 +14,7 @@ Hibi in Chrome's side panel: hand repetitive web chores to Hibi, one site at a t
 npm install
 npm run build          # dist/, talks to https://hibira.io
 npm run typecheck
-npm test               # unit tests (policy, page tools, agent loop)
+npm test               # unit tests (the core has its own in pusher-server)
 ```
 
 Load `dist/` at `chrome://extensions` with Developer mode on (Load unpacked).
@@ -36,9 +36,9 @@ The demo build adds the `tabs` permission and grants `northwind.example` up fron
 
 | Path | What it is |
 |------|------------|
-| `src/core/` | The policy (what Hibi may do on a page), the agent loop and shared types |
-| `src/content/` | Page tools, injected only into sites the person turned on |
-| `src/chrome/` | Sign-in, per-site permissions, the HTTPS transport, the tab runner |
+| `vendor/` | The Secretary core from pusher-server (agent loop, page tools, policy), copied by `scripts/sync-core.sh`; `vendor/SOURCE` names the commit. Change it in pusher-server, not here. |
+| `src/content/` | The content script: hosts the core's `LocalPage`, injected only into sites the person turned on |
+| `src/chrome/` | `ExtensionPage` (the core's `PageAdapter` over the content script), sign-in, per-site permissions |
 | `src/panel/` | The side panel |
 | `public/` | Manifest, panel HTML/CSS, icons, `_locales` |
 | `store/` | Chrome Web Store listing copy and privacy answers |
@@ -49,4 +49,4 @@ Bump `version` in `package.json` and `public/manifest.json`, then publish a GitH
 
 ## 中文摘要
 
-Hibi 的 Chrome 擴充功能：在側邊欄把重複的網頁雜事交給 Hibi。安裝時不要求任何網站權限，使用者逐一開啟網站；一般操作（選單、分頁、搜尋、篩選、輸入、換頁）直接執行，送出、儲存、付款、刪除會先填好再等使用者同意；登入、註冊、機器人驗證頁完全不碰，也不讀寫密碼、卡號、驗證碼。免費每月任務額度，之後按任務計費（每任務最多 20 步）。`npm run build` 建置，`demo/` 是本機 demo（虛構商店後台＋腳本化 API，不碰正式環境），`e2e/run.cjs` 跑端對端測試並產生商店截圖。發布：更新兩處版本號後建立 GitHub Release，CI 產生上架用 zip。
+Hibi 的 Chrome 擴充功能：在側邊欄把重複的網頁雜事交給 Hibi。安裝時不要求任何網站權限，使用者逐一開啟網站；一般操作（選單、分頁、搜尋、篩選、輸入、換頁）直接執行，送出、儲存、付款、刪除會先填好再等使用者同意；登入、註冊、機器人驗證頁完全不碰，也不讀寫密碼、卡號、驗證碼。免費每月任務額度，之後按任務計費（每任務最多 20 步）。`npm run build` 建置，共用 SDK 核心（`vendor/`，由 `scripts/sync-core.sh` 從 pusher-server 同步），`demo/` 是本機 demo（虛構商店後台＋腳本化 API，不碰正式環境），`e2e/run.cjs` 跑端對端測試並產生商店截圖。發布：更新兩處版本號後建立 GitHub Release，CI 產生上架用 zip。

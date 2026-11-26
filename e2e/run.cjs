@@ -60,7 +60,11 @@ const assert = (ok, msg) => {
   await panel.waitForSelector('#ask:not([hidden])');
   await panel.fill('#input', 'Mark order #1042 shipped: DHL, tracking JD014600.');
   await panel.click('#send');
-  await panel.waitForSelector('.msg.approval button.primary', { timeout: 20000 });
+  await panel.waitForSelector('.msg.approval button.primary', { timeout: 20000 }).catch(async (e) => {
+    console.log(await panel.textContent('#log'));
+    await shot('fail');
+    throw e;
+  });
   await site.bringToFront();
   assert(site.url().endsWith('/orders/1042'), `clicked through to the order (${site.url()})`);
   assert((await site.inputValue('#tracking')) === 'JD014600', 'typed the tracking number');
