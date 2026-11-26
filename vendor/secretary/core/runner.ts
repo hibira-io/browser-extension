@@ -4,7 +4,7 @@
 // The state is saved before every action, so a click that loads a new
 // page (a form post, a link) carries on after the load.
 
-import { resultText, toolSpecs } from './tools';
+import { repairInput, resultText, toolSpecs } from './tools';
 import type { Block, Message, Summary, Tool, TurnResult } from './types';
 
 /** Tool calls one question may make. */
@@ -123,7 +123,7 @@ async function loop(s: RunState, h: RunHooks): Promise<RunState> {
     for (let k = 0; k < uses.length; k++) {
       const u = uses[k];
       steps++;
-      const input = (u.input ?? {}) as Record<string, unknown>;
+      const input = repairInput((u.input ?? {}) as Record<string, unknown>);
       const step: Step = { id: u.id ?? String(steps), tool: u.name ?? '', input, state: 'running' };
       const tool = tools.find((t) => t.name === u.name);
       let content: string;

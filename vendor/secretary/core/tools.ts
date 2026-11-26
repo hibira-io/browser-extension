@@ -145,6 +145,29 @@ export function toolSpecs(tools: Tool[]) {
   return tools.map((t) => ({ name: t.name, description: t.description.slice(0, 1024), input_schema: t.inputSchema }));
 }
 
+/**
+ * The input with tool-call markup the model sometimes leaks into a value
+ * mended: {"ref": "e8>\n<__parameter=text>Tokyo</__parameter>"} becomes
+ * {"ref": "e8", "text": "Tokyo"}. Keys already set are kept.
+ */
+export function repairInput(input: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...input };
+  for (const [k, v] of Object.entries(input)) {
+    if (typeof v !== 'string') continue;
+    const at = v.search(/<\/?(?:__)?parameter\b/);
+    if (at < 0) continue;
+    out[k] = v.slice(0, at).replace(/[>\s]+$/, '').trim();
+    const re = /<(?:__)?parameter[= ](?:name=)?"?([a-zA-Z_][\w]*)"?>([\s\S]*?)(?=<\/?(?:__)?parameter\b|$)/g;
+    for (let m = re.exec(v); m; m = re.exec(v)) {
+      const [, name, raw] = m;
+      if (out[name] !== undefined && name !== k) continue;
+      const val = raw.trim();
+      out[name] = val === 'true' ? true : val === 'false' ? false : val;
+    }
+  }
+  return out;
+}
+
 /** A tool's result as text for the model (cut to keep turns small). */
 export function resultText(v: unknown, max = 16000): string {
   let s: string;

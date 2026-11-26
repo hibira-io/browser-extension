@@ -3,7 +3,7 @@
 // the tools act), so the script tag, an npm import and a browser
 // extension share it.
 
-import { HttpTransport, SecretaryError, type Auth } from './api';
+import { HttpTransport, SecretaryError, type Auth, type HandoffCommand, type HandoffTransport } from './api';
 import { pickLang, t, textLang, type Lang } from './i18n';
 import { LocalPage, type PageAdapter } from './page';
 import { Panel } from './panel';
@@ -17,6 +17,8 @@ import { webMCPTools } from './webmcp';
 export interface SecretaryOptions extends Auth {
   /** Hibira's API, default https://hibira.io/secretary/v1. */
   endpoint?: string;
+  /** Offer hand-off to a phone (default true). */
+  handoff?: boolean;
   /** The panel's language (default: the page's). */
   lang?: string;
   /** Launcher side. */
@@ -38,6 +40,15 @@ export interface SecretaryOptions extends Auth {
 
 const STATE = 'hibira-secretary-state';
 const OPEN = 'hibira-secretary-open';
+const HANDOFF = 'hibira-secretary-handoff';
+
+/** A hand-off in progress, kept across page loads. */
+interface HandoffState {
+  id: string;
+  url: string;
+  qr: string;
+  after: number;
+}
 
 function load<T>(k: string): T | null {
   try {
@@ -134,6 +145,7 @@ export class Secretary {
         autoAllowed: !!this.info?.auto_mode,
         voice: this.o.voice !== false && canListen(),
         speech: canSpeak(),
+        handoff: this.o.handoff !== false && !!this.handoffs(),
         mount: this.o.mount,
         position: this.o.position,
         nonce: this.o.nonce,
@@ -149,6 +161,7 @@ export class Secretary {
           if (!on) hush();
         },
         open: (open) => store(OPEN, open || null),
+        handoff: (on) => (on ? this.startHandoff() : this.endHandoff()),
       },
     );
     if (this.o.webmcp !== false) this.webmcp = await webMCPTools();
@@ -160,6 +173,76 @@ export class Secretary {
     if (this.o.open || load<boolean>(OPEN) || saved?.pending) this.panel.setOpen(true);
     if (this.info && !this.info.enabled) this.panel.note(t(this.lang, 'off'), 'note');
     if (saved?.pending) this.run((h) => resume(saved, h));
+    const ho = load<HandoffState>(HANDOFF);
+    if (ho && this.handoffs()) this.followHandoff(ho);
+  }
+
+  private handoffs(): HandoffTransport | null {
+    const tr = this.transport as Partial<HandoffTransport>;
+    return tr.startHandoff && tr.syncHandoff && tr.endHandoff ? (tr as HandoffTransport) : null;
+  }
+
+  private ho: HandoffState | null = null;
+  private hoTimer = 0;
+  private phone = false;
+  private queued: string[] = [];
+
+  private async startHandoff() {
+    const tr = this.handoffs();
+    if (!tr || !this.panel) return;
+    try {
+      const h = await tr.startHandoff();
+      this.followHandoff({ id: h.id, url: h.url, qr: h.qr, after: 0 });
+    } catch (err) {
+      this.panel.note((err as Error).message, 'note');
+    }
+  }
+
+  private endHandoff() {
+    const ho = this.ho;
+    this.ho = null;
+    this.phone = false;
+    clearTimeout(this.hoTimer);
+    store(HANDOFF, null);
+    this.panel?.showHandoff(null);
+    if (ho) this.handoffs()?.endHandoff(ho.id).catch(() => undefined);
+  }
+
+  /** Sends the panel to the phone and runs its commands, every 1.5 s. */
+  private followHandoff(ho: HandoffState) {
+    this.ho = ho;
+    store(HANDOFF, ho);
+    this.panel?.showHandoff(ho, this.phone);
+    const tick = async () => {
+      const tr = this.handoffs();
+      if (!tr || !this.panel || this.ho !== ho) return;
+      try {
+        const out = await tr.syncHandoff(ho.id, this.panel.snapshot(), ho.after);
+        if (this.ho !== ho) return;
+        for (const c of out.commands) {
+          ho.after = Math.max(ho.after, c.seq);
+          this.command(c);
+        }
+        store(HANDOFF, ho);
+        if (out.phone !== this.phone) {
+          this.phone = out.phone;
+          this.panel.showHandoff(ho, this.phone);
+        }
+      } catch (err) {
+        if (err instanceof SecretaryError && err.status === 404) return this.endHandoff();
+      }
+      this.hoTimer = window.setTimeout(tick, 1500);
+    };
+    tick().catch(() => undefined);
+  }
+
+  private command(c: HandoffCommand) {
+    if (c.type === 'stop') this.abort?.abort();
+    else if (c.type === 'approve' || c.type === 'decline') this.panel?.answer(c.ref ?? '', c.type === 'approve');
+    else if (c.type === 'ask' && c.text) {
+      if (this.abort) this.queued.push(c.text);
+      else this.ask(c.text);
+    }
   }
 
   private reset() {
@@ -247,6 +330,8 @@ export class Secretary {
       .finally(() => {
         this.abort = null;
         panel.setBusy(false);
+        const next = this.queued.shift();
+        if (next) this.ask(next);
       });
   }
 }
