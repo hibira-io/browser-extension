@@ -97,5 +97,8 @@
   },
   "actNavigate": {
     "message": "打开了页面"
+  },
+  "signInFailed": {
+    "message": "登录没有完成，请再试一次。"
   }
 }

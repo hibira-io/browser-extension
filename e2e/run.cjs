@@ -48,9 +48,12 @@ const assert = (ok, msg) => {
   await shot(`1-signin-${tag}`);
 
   // Signed in, on a site that is still off.
-  await sw.evaluate(() => chrome.storage.local.set({ hibiToken: { token: 'demo', email: 'demo@example.com', expiresAt: Date.now() + 864e5 } }));
-  await panel.reload();
-  await panel.waitForSelector('#gate button');
+  // Sign in through the real flow (launchWebAuthFlow against the demo's
+  // OAuth stand-in, which approves at once like hibira.io does for Hibi).
+  await panel.click('#gate button');
+  await panel.waitForFunction(() => document.querySelector('#gate')?.textContent?.includes('shop.example') && document.querySelector('#gate button'), null, { timeout: 15000 });
+  const saved = await sw.evaluate(() => chrome.storage.local.get('hibiSession'));
+  assert(saved.hibiSession?.token === 'sst_demo', 'signed in with a session token');
   assert((await panel.textContent('#gate')).includes('shop.example'), 'off gate names the site');
   await shot(`2-site-off-${tag}`);
 

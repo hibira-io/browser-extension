@@ -97,5 +97,8 @@
   },
   "actNavigate": {
     "message": "開啟了頁面"
+  },
+  "signInFailed": {
+    "message": "登入沒有完成，請再試一次。"
   }
 }

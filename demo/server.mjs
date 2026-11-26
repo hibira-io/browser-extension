@@ -89,11 +89,18 @@ createServer(async (req, res) => {
     const body = JSON.parse(await readBody(req));
     return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(scriptedTurn(body)));
   }
-  if (url.pathname === '/secretary/v1/extension/session') return res.writeHead(204, cors).end();
-  if (url.pathname === '/secretary/extension/connect') {
+  // Sign in with Hibira, as hibira.io answers a first-party client.
+  if (url.pathname === '/oauth/authorize') {
     const back = new URL(url.searchParams.get('redirect_uri'));
-    back.hash = new URLSearchParams({ token: 'demo', state: url.searchParams.get('state') ?? '', email: 'demo@example.com', expires_in: '86400' }).toString();
+    back.search = new URLSearchParams({ code: 'demo_code', state: url.searchParams.get('state') ?? '' }).toString();
     return res.writeHead(302, { Location: back.toString() }).end();
+  }
+  if (url.pathname === '/oauth/token' && req.method === 'POST') {
+    return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify({ access_token: 'si_demo', token_type: 'Bearer', scope: 'email', expires_in: 300 }));
+  }
+  if (url.pathname === '/secretary/v1/extension/session' && req.method === 'POST') {
+    const session = { token: 'sst_demo', email: 'demo@example.com', expires_at: new Date(Date.now() + 30 * 864e5).toISOString() };
+    return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(session));
   }
   const m = url.pathname.match(/^\/orders\/(\d+)$/);
   const o = m && orders.find((x) => x.id === Number(m[1]));

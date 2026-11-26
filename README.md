@@ -43,6 +43,10 @@ The demo build adds the `tabs` permission and grants `northwind.example` up fron
 | `public/` | Manifest, panel HTML/CSS, icons, `_locales` |
 | `store/` | Chrome Web Store listing copy and privacy answers |
 
+## Sign-in
+
+"Sign in with Hibira" (OAuth 2.0 + PKCE, `scope=email`) through `chrome.identity.launchWebAuthFlow`. hibira.io treats the extension as a first-party client, so there is no consent page: the person only signs in to hibira.io, in Chrome's own window. The code is traded for a single-use sign-in token, then for a 30-day session on the person's own Hibi workspace (`POST /secretary/v1/extension/session`). On pusher-server, set `SECRETARY_EXTENSION_IDS` to the store item's ID.
+
 ## Release
 
 Bump `version` in `package.json` and `public/manifest.json`, then publish a GitHub Release `vX.Y.Z`. CI attaches `hibi-extension-X.Y.Z.zip` to the release for the Chrome Web Store upload.

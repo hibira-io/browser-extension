@@ -97,5 +97,8 @@
   },
   "actNavigate": {
     "message": "ページを開きました"
+  },
+  "signInFailed": {
+    "message": "サインインが完了しませんでした。もう一度お試しください。"
   }
 }

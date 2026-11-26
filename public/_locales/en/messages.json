@@ -97,5 +97,8 @@
   },
   "actNavigate": {
     "message": "Opened a page"
+  },
+  "signInFailed": {
+    "message": "Sign-in didn't finish. Please try again."
   }
 }
