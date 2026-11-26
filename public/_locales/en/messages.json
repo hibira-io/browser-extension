@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "Sign-in didn't finish. Please try again."
+  },
+  "chooseFolder": {
+    "message": "Let Hibi use a folder on this computer"
+  },
+  "folderOn": {
+    "message": "Folder: $1"
+  },
+  "forgetFolder": {
+    "message": "Stop using this folder"
   }
 }

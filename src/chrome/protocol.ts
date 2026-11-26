@@ -15,4 +15,11 @@ export interface PageCall {
   args: unknown[];
 }
 
+/** A file for attach (no PageAdapter method: the extension's own). */
+export interface AttachCall {
+  hibi: 'attach';
+  ref: string;
+  file: { name: string; type: string; data: string };
+}
+
 export type PageReply = { ok: true; value: unknown } | { ok: false; error: string };

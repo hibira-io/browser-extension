@@ -6,7 +6,7 @@
 
 import type { PageAdapter, PageSignals } from '../../vendor/secretary/core/page';
 import type { Target } from '../../vendor/secretary/core/policy';
-import type { PageCall, PageMethod, PageReply } from './protocol';
+import type { AttachCall, PageCall, PageMethod, PageReply } from './protocol';
 import { isOn, originPattern } from './sites';
 
 export class SiteChangedError extends Error {}
@@ -22,12 +22,27 @@ export class ExtensionPage implements PageAdapter {
     this.current = { url: tab.url ?? '', title: tab.title ?? '' };
   }
 
-  private async call<T>(method: PageMethod, ...args: unknown[]): Promise<T> {
+  /** Waits for the page, checks it is still the task's site and Hibi is on
+   *  there, and makes sure the content script is in it. */
+  private async ready(): Promise<void> {
     await waitLoaded(this.tabId);
     await this.refresh();
     if (originPattern(this.current.url) !== this.origin) throw new SiteChangedError('the tab left the site this task is about; stop and tell the person');
     if (!(await isOn(this.current.url))) throw new SiteChangedError('Hibi is turned off for this site; stop and tell the person');
     await chrome.scripting.executeScript({ target: { tabId: this.tabId }, files: ['content.js'] });
+  }
+
+  /** Puts a file from the person's chosen folder into a file field. */
+  async attach(ref: string, file: AttachCall['file']): Promise<void> {
+    await this.ready();
+    const msg: AttachCall = { hibi: 'attach', ref, file };
+    const reply = (await chrome.tabs.sendMessage(this.tabId, msg)) as PageReply | undefined;
+    if (!reply) throw new Error('the page did not answer; read the page again');
+    if (!reply.ok) throw new Error(reply.error);
+  }
+
+  private async call<T>(method: PageMethod, ...args: unknown[]): Promise<T> {
+    await this.ready();
     // Messages are JSON: a trailing undefined would arrive as null and
     // replace the method's default.
     while (args.length && args[args.length - 1] === undefined) args.pop();

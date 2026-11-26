@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "Chưa đăng nhập xong. Vui lòng thử lại."
+  },
+  "chooseFolder": {
+    "message": "Cho Hibi dùng một thư mục trên máy này"
+  },
+  "folderOn": {
+    "message": "Thư mục: $1"
+  },
+  "forgetFolder": {
+    "message": "Ngừng dùng thư mục này"
   }
 }

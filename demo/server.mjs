@@ -108,6 +108,10 @@ createServer(async (req, res) => {
     const session = { token: 'sst_demo', email: 'demo@example.com', expires_at: new Date(Date.now() + 30 * 864e5).toISOString() };
     return res.writeHead(200, { ...cors, 'Content-Type': 'application/json' }).end(JSON.stringify(session));
   }
+  // A file field, for trying attach_file (Hibi's folder tools).
+  if (url.pathname === '/upload') {
+    return res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(`<!doctype html><meta charset="utf-8"><title>Upload</title><form><label for="doc">Invoice</label><input id="doc" name="doc" type="file"><button>Send</button></form><p id="got"></p><script>doc.onchange=async()=>{got.textContent=doc.files[0].name+' '+doc.files[0].size+' '+(await doc.files[0].text()).slice(0,20)}</script>`);
+  }
   const m = url.pathname.match(/^\/orders\/(\d+)$/);
   const o = m && orders.find((x) => x.id === Number(m[1]));
   if (o && req.method === 'POST') {

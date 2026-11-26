@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "ลงชื่อเข้าใช้ไม่สำเร็จ โปรดลองอีกครั้ง"
+  },
+  "chooseFolder": {
+    "message": "ให้ Hibi ใช้โฟลเดอร์ในคอมพิวเตอร์นี้"
+  },
+  "folderOn": {
+    "message": "โฟลเดอร์: $1"
+  },
+  "forgetFolder": {
+    "message": "เลิกใช้โฟลเดอร์นี้"
   }
 }

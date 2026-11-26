@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "登录没有完成，请再试一次。"
+  },
+  "chooseFolder": {
+    "message": "让 Hibi 使用电脑里的一个文件夹"
+  },
+  "folderOn": {
+    "message": "文件夹：$1"
+  },
+  "forgetFolder": {
+    "message": "不再使用这个文件夹"
   }
 }
