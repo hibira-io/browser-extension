@@ -37,6 +37,8 @@ export interface PanelEvents {
   open: (open: boolean) => void;
   /** Start (true) or end (false) a hand-off to a phone. */
   handoff?: (on: boolean) => void;
+  /** Hand the person to the team on Live Chat. */
+  person?: () => void;
 }
 
 /** One line of the log, as the phone shows it. */
@@ -65,6 +67,7 @@ const ICON = {
   mic: '<rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
   reset: '<path d="M4 12a8 8 0 108-8 8 8 0 00-6 2.7M4 4v4h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/>',
+  person: '<path d="M4 14v-2a8 8 0 0 1 16 0v2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/><rect x="17" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M11 18h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   speaker: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
 };
@@ -95,6 +98,8 @@ header{display:flex;align-items:center;gap:8px;padding:12px 12px 12px 16px;borde
 .handoff .hint{font-size:12.5px;color:var(--mut)}.handoff .lnk{background:none;border:0;color:var(--c);cursor:pointer;font:inherit;font-size:13px;text-decoration:underline}
 .handoff:has(.hb-on){flex-direction:row;padding:8px 12px;font-size:13px;gap:8px}.hb-on{width:8px;height:8px;border-radius:50%;background:#16a34a;flex:none}.handoff:has(.hb-on) .lnk{margin-left:auto}
 .ib.phone.on{color:var(--c)}
+.launch.away{display:none}.ib.person{position:relative}.ib.person.new::after,.launch.new::after{content:"";position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#16a34a;border:2px solid var(--bg)}.launch.new::after{top:1px;right:1px;width:13px;height:13px}.launch.has-face.new{overflow:visible}
+.replied{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13px;background:var(--soft)}.replied button{margin-left:auto;background:var(--c);color:#fff;border:0;border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
 .autobar{background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--fg);font-size:12px;padding:6px 16px;display:flex;gap:6px;align-items:center}
 .log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
 .msg{max-width:88%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word}
@@ -133,6 +138,7 @@ const STEP_KEY: Record<string, StringKey> = {
   navigate: 'stepNavigate',
   go_back: 'stepBack',
   point: 'stepPoint',
+  talk_to_person: 'stepPerson',
 };
 
 /** Escapes text and turns **bold**, `code` and "- " lists into HTML. */
@@ -203,6 +209,7 @@ export class Panel {
       <div class="panel ${side}" role="dialog" aria-modal="false" hidden>
         <header>
           <div class="title"><span class="dot">${svg('spark', 15)}</span><span class="nm"></span></div>
+          <button class="ib person" hidden></button>
           <button class="ib phone" hidden></button>
           <button class="ib speak" hidden></button>
           <button class="ib auto" hidden></button>
@@ -326,6 +333,7 @@ export class Panel {
     this.launch.hidden = open;
     if (open) {
       if (!this.log.children.length) this.note(this.tr('hello', { name: this.o.name }), 'ai');
+      this.log.scrollTop = this.log.scrollHeight;
       setTimeout(() => this.input.focus(), 50);
     } else this.launch.focus();
     this.ev.open(open);
@@ -437,6 +445,9 @@ export class Panel {
   }
 
   /** Asks the user to approve; resolves with their answer. */
+  /** Where the last approval was answered: on this computer or on the phone. */
+  decidedBy: 'desk' | 'phone' = 'desk';
+
   approve(summary: Summary, signal: AbortSignal): Promise<boolean> {
     if (!this.isOpen()) this.setOpen(true);
     const id = 'a' + ++this.approvals + '-' + Date.now().toString(36);
@@ -472,6 +483,7 @@ export class Panel {
       this.pending = { id, text: summary.text, fields: summary.fields ?? [], done };
       const abort = () => done(false);
       signal.addEventListener('abort', abort);
+      this.decidedBy = 'desk';
       yes.onclick = () => done(true);
       no.onclick = () => done(false);
       this.append(card);
@@ -482,6 +494,7 @@ export class Panel {
   /** Answers the approval waiting, from elsewhere (the phone); false when ref is not the one waiting. */
   answer(ref: string, yes: boolean): boolean {
     if (!this.pending || this.pending.id !== ref) return false;
+    this.decidedBy = 'phone';
     this.pending.done(yes);
     return true;
   }
@@ -499,6 +512,47 @@ export class Panel {
     }
     const p = this.pending;
     return { name: this.o.name, avatar: this.o.avatar, lang: this.o.lang, busy: this.busy, items: items.slice(-60), pending: p && { id: p.id, text: p.text, fields: p.fields } };
+  }
+
+  /** Hides the launcher while another chat on the page is open over it. */
+  hideLauncher(hide: boolean) {
+    this.launch.classList.toggle('away', hide);
+  }
+
+  /** Shows (or hides) the button that hands the person to the team. */
+  setPerson(on: boolean) {
+    const b = this.root.querySelector('.person') as HTMLButtonElement | null;
+    if (!b || !this.ev.person) return;
+    b.hidden = !on;
+    b.innerHTML = svg('person');
+    b.setAttribute('aria-label', this.tr('person'));
+    b.dataset.tip = this.tr('person');
+    b.onclick = () => {
+      b.classList.remove('new');
+      this.launch.classList.remove('new');
+      this.log.querySelector('.replied')?.remove();
+      this.ev.person!();
+    };
+  }
+
+  /** The team replied in Live Chat while it was closed. */
+  personReplied(name: string) {
+    const b = this.root.querySelector('.person') as HTMLButtonElement | null;
+    if (!b || b.hidden) return;
+    b.classList.add('new');
+    this.launch.classList.add('new');
+    this.log.querySelector('.replied')?.remove();
+    const row = document.createElement('div');
+    row.className = 'replied';
+    const tx = document.createElement('span');
+    tx.textContent = this.tr('personReplied', { name: name || this.tr('person') });
+    const go = document.createElement('button');
+    go.type = 'button';
+    go.textContent = this.tr('personOpen');
+    go.onclick = () => b.click();
+    row.append(tx, go);
+    this.log.appendChild(row);
+    this.log.scrollTop = this.log.scrollHeight;
   }
 
   /** Shows the QR code for the phone (or takes it away with null). */

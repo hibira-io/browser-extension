@@ -4,6 +4,7 @@
 // model passes on.
 
 import type { PageAdapter } from './page';
+import { t, type Lang } from './i18n';
 import { authPage, decideClick, decideSelect, decideType, type Decision } from './policy';
 import type { ObjectSchema } from './schema';
 import type { Check, Tool, ToolDef } from './types';
@@ -27,7 +28,8 @@ async function pageRefusal(page: PageAdapter): Promise<Check | null> {
 }
 
 /** The built-in tools over page. */
-export function builtinTools(page: PageAdapter): Tool[] {
+/** The built-in tools; lang is the language of the approval summaries. */
+export function builtinTools(page: PageAdapter, lang: () => Lang = () => 'en'): Tool[] {
   const describeOr = async (ref: string) => {
     const t = await page.describe(ref);
     if (!t) throw new Error(`no element ${ref} on the page now; call read_page again`);
@@ -55,7 +57,7 @@ export function builtinTools(page: PageAdapter): Tool[] {
       description: 'Clicks a link, button, tab, checkbox, menu item or other control. A click that submits, saves, sends, deletes or pays waits for the person to approve it.',
       inputSchema: obj({ ref: REF }, ['ref']),
       check: async (i) => (await pageRefusal(page)) ?? toCheck(decideClick(await describeOr(str(i.ref, 20)))),
-      summary: async (i) => ({ text: `Click "${await label(str(i.ref, 20))}"`, fields: await page.formFields(str(i.ref, 20)) }),
+      summary: async (i) => ({ text: t(lang(), 'sumClick', { name: await label(str(i.ref, 20)) }), fields: await page.formFields(str(i.ref, 20)) }),
       show: async (i) => void (await page.point(str(i.ref, 20), 60_000)),
       unshow: () => page.unpoint(),
       run: async (i) => {
@@ -69,7 +71,7 @@ export function builtinTools(page: PageAdapter): Tool[] {
       description: 'Types text into a field (replacing what is there unless clear is false). Set submit to press Enter afterwards, which waits for approval unless it only searches.',
       inputSchema: obj({ ref: REF, text: S('What to type.'), clear: B('Replace the current text (default true).'), submit: B('Press Enter afterwards.') }, ['ref', 'text']),
       check: async (i) => (await pageRefusal(page)) ?? toCheck(decideType(await describeOr(str(i.ref, 20)), i.submit === true)),
-      summary: async (i) => ({ text: `Type "${str(i.text, 80)}" into "${await label(str(i.ref, 20))}" and press Enter`, fields: await page.formFields(str(i.ref, 20)) }),
+      summary: async (i) => ({ text: t(lang(), 'sumEnter', { text: str(i.text, 80), name: await label(str(i.ref, 20)) }), fields: await page.formFields(str(i.ref, 20)) }),
       show: async (i) => void (await page.point(str(i.ref, 20), 60_000)),
       unshow: () => page.unpoint(),
       run: async (i) => {

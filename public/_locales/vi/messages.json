@@ -100,11 +100,5 @@
   },
   "signInFailed": {
     "message": "Chưa đăng nhập xong. Vui lòng thử lại."
-  },
-  "confirmClick": {
-    "message": "Bấm \"$1\""
-  },
-  "confirmEnter": {
-    "message": "Nhập \"$1\" vào \"$2\" rồi nhấn Enter"
   }
 }

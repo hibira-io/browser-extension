@@ -21,6 +21,7 @@ export interface TurnRequest {
   mode: '' | 'auto';
   task_id: string;
   decisions: { approved: number; declined: number; auto: number };
+  steps?: AuditStep[];
   stop?: boolean;
 }
 
@@ -39,12 +40,21 @@ export interface Step {
   auto?: boolean;
 }
 
+/** One step for the workspace's audit log (internal/secretary TaskStep). */
+export interface AuditStep {
+  tool: string;
+  target?: string;
+  outcome: 'done' | 'approved' | 'declined' | 'refused' | 'failed';
+  by?: 'desk' | 'phone' | 'auto';
+  fields?: string[];
+}
+
 /** What survives a page load. */
 export interface RunState {
   messages: Message[];
   taskId: string;
   /** Set while tools run: the results so far and the call in progress. */
-  pending?: { results: Block[]; current: string; rest: string[]; url: string };
+  pending?: { results: Block[]; current: string; rest: string[]; url: string; decisions?: { approved: number; declined: number; auto: number } };
 }
 
 export interface RunHooks {
@@ -56,6 +66,8 @@ export interface RunHooks {
   approve: (tool: Tool, input: Record<string, unknown>, summary: Summary, signal: AbortSignal) => Promise<boolean>;
   onMessages: (messages: Message[]) => void;
   onStep: (step: Step) => void;
+  /** The audit log's steps that ended since the last turn, taken. */
+  audit?: () => AuditStep[];
   onTurn?: (out: TurnResult) => void;
   save: (state: RunState) => void;
   signal: AbortSignal;
@@ -86,20 +98,24 @@ export async function resume(state: RunState, h: RunHooks): Promise<RunState> {
     { type: 'tool_result', tool_use_id: p.current, content: now !== p.url ? `Done; the page changed to ${now}. Read the page to see it.` : 'Done; the page reloaded. Read the page to see it.' },
     ...p.rest.map((id) => ({ type: 'tool_result' as const, tool_use_id: id, content: 'Not run: the page changed first.', is_error: true })),
   ];
+  // The step the page load interrupted ended there: report it.
+  const last = [...state.messages].reverse().find((m) => m.role === 'assistant');
+  const use = last?.content.find((b) => b.type === 'tool_use' && b.id === p.current);
+  if (use && use.type === 'tool_use') h.onStep({ id: p.current, tool: use.name ?? '', input: (use.input ?? {}) as Record<string, unknown>, state: 'done' });
   const s: RunState = { messages: [...state.messages, { role: 'user', content: results }], taskId: state.taskId };
   h.onMessages(s.messages);
-  return loop(s, h);
+  return loop(s, h, p.decisions);
 }
 
-async function loop(s: RunState, h: RunHooks): Promise<RunState> {
+async function loop(s: RunState, h: RunHooks, carried?: { approved: number; declined: number; auto: number }): Promise<RunState> {
   const { signal } = h;
   let steps = 0;
-  let decisions = { approved: 0, declined: 0, auto: 0 };
+  let decisions = carried ?? { approved: 0, declined: 0, auto: 0 };
   for (;;) {
     h.save({ messages: s.messages, taskId: s.taskId });
     const tools = h.tools();
     const out = await h.transport.turn(
-      { messages: s.messages, tools: toolSpecs(tools), page: h.page(), locale: h.locale(), mode: h.auto() ? 'auto' : '', task_id: s.taskId, decisions },
+      { messages: s.messages, tools: toolSpecs(tools), page: h.page(), locale: h.locale(), mode: h.auto() ? 'auto' : '', task_id: s.taskId, decisions, steps: h.audit?.() ?? [] },
       signal,
     );
     decisions = { approved: 0, declined: 0, auto: 0 };
@@ -116,7 +132,7 @@ async function loop(s: RunState, h: RunHooks): Promise<RunState> {
     if (steps >= MAX_STEPS) {
       s.messages = [...s.messages, { role: 'user', content: uses.map((u) => ({ type: 'tool_result' as const, tool_use_id: u.id, content: 'Stopped: too many steps for one question.', is_error: true })) }];
       h.save({ messages: s.messages, taskId: s.taskId });
-      await h.transport.turn({ messages: s.messages, tools: [], page: h.page(), locale: h.locale(), mode: '', task_id: s.taskId, decisions, stop: true }, signal).catch(() => undefined);
+      await h.transport.turn({ messages: s.messages, tools: [], page: h.page(), locale: h.locale(), mode: '', task_id: s.taskId, decisions, steps: h.audit?.() ?? [], stop: true }, signal).catch(() => undefined);
       return s;
     }
     const results: Block[] = [];
@@ -158,7 +174,7 @@ async function loop(s: RunState, h: RunHooks): Promise<RunState> {
           }
         }
         // A page load during the tool picks up from here (resume).
-        h.save({ messages: s.messages, taskId: s.taskId, pending: { results: [...results], current: u.id ?? '', rest: uses.slice(k + 1).map((x) => x.id ?? ''), url: h.page().url } });
+        h.save({ messages: s.messages, taskId: s.taskId, pending: { results: [...results], current: u.id ?? '', rest: uses.slice(k + 1).map((x) => x.id ?? ''), url: h.page().url, decisions: { ...decisions } } });
         content = resultText(await tool.run(input, { signal }));
         h.onStep({ ...step, state: 'done' });
       } catch (err) {
