@@ -1,0 +1,31 @@
+# Builds the store zip when a GitHub Release is published and attaches it to
+# the release. The release tag must be v<version from package.json>.
+name: release
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: Tag matches versions
+        run: |
+          pkg="$(node -p "require('./package.json').version")"
+          man="$(node -p "require('./public/manifest.json').version")"
+          if [ "v$pkg" != "$GITHUB_REF_NAME" ] || [ "$pkg" != "$man" ]; then
+            echo "tag $GITHUB_REF_NAME, package.json $pkg and manifest $man must match"; exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - run: npm run zip
+      - run: gh release upload "$GITHUB_REF_NAME" hibi-extension-*.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

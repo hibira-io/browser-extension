@@ -1,0 +1,107 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "Hand repetitive web chores to Hibi. Turn it on one site at a time; every submit waits for your approval."
+  },
+  "actionTitle": {
+    "message": "Open Hibi"
+  },
+  "askPlaceholder": {
+    "message": "What should I do on this page?"
+  },
+  "send": {
+    "message": "Send"
+  },
+  "stop": {
+    "message": "Stop"
+  },
+  "account": {
+    "message": "Account"
+  },
+  "signInIntro": {
+    "message": "Hibi does repetitive chores on the sites you choose: filling forms, copying details across pages, clicking through lists. Sign in with your Hibira account to start. The free plan includes monthly tasks."
+  },
+  "signIn": {
+    "message": "Sign in with Hibira"
+  },
+  "unsupportedPage": {
+    "message": "Open a website in this tab to use Hibi here."
+  },
+  "siteOffIntro": {
+    "message": "Hibi is off for $1. Turn it on to let Hibi read and work on this site. You can turn it off any time."
+  },
+  "turnOn": {
+    "message": "Turn on for $1"
+  },
+  "turnOffSite": {
+    "message": "Turn off for this site"
+  },
+  "managePlan": {
+    "message": "Plan and usage"
+  },
+  "signOut": {
+    "message": "Sign out"
+  },
+  "hello": {
+    "message": "Hi, I'm Hibi. Tell me what to do on $1. I leave sign-in pages and robot checks to you, and I ask before anything is submitted."
+  },
+  "approveTitle": {
+    "message": "Submit \"$1\"?"
+  },
+  "approve": {
+    "message": "Approve"
+  },
+  "decline": {
+    "message": "Not now"
+  },
+  "approved": {
+    "message": "Approved"
+  },
+  "declined": {
+    "message": "Not submitted"
+  },
+  "stepCap": {
+    "message": "This task has used $1 steps. Going on counts as another task."
+  },
+  "continue": {
+    "message": "Keep going"
+  },
+  "stopHere": {
+    "message": "Stop here"
+  },
+  "working": {
+    "message": "Working…"
+  },
+  "tasksLeft": {
+    "message": "$1 of $2 tasks left this month"
+  },
+  "tasksExtra": {
+    "message": "Extra tasks: US$$$1 each"
+  },
+  "allowanceUsed": {
+    "message": "You have used this month's tasks. Open Plan and usage to add more."
+  },
+  "useOnSite": {
+    "message": "Use Hibi on this site"
+  },
+  "needInvoke": {
+    "message": "To use Hibi on this tab, click the Hibi button in the toolbar, press Alt+Shift+H, or right-click the page and choose \"Use Hibi on this site\"."
+  },
+  "actRead": {
+    "message": "Read the page"
+  },
+  "actClick": {
+    "message": "Clicked \"$1\""
+  },
+  "actType": {
+    "message": "Filled in \"$1\""
+  },
+  "actSelect": {
+    "message": "Chose \"$1\""
+  },
+  "actScroll": {
+    "message": "Scrolled"
+  }
+}

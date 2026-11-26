@@ -1,0 +1,107 @@
+{
+  "extName": {
+    "message": "Hibi by Hibira"
+  },
+  "extDescription": {
+    "message": "把重複的網頁雜事交給 Hibi。一次只在你開啟的網站上運作，每次送出都等你同意。"
+  },
+  "actionTitle": {
+    "message": "開啟 Hibi"
+  },
+  "askPlaceholder": {
+    "message": "要在這個頁面做什麼？"
+  },
+  "send": {
+    "message": "送出"
+  },
+  "stop": {
+    "message": "停止"
+  },
+  "account": {
+    "message": "帳號"
+  },
+  "signInIntro": {
+    "message": "Hibi 幫你在指定的網站上做重複的雜事：填表單、在頁面間搬資料、逐筆點清單。用 Hibira 帳號登入即可開始，免費方案每月含一定任務數。"
+  },
+  "signIn": {
+    "message": "用 Hibira 登入"
+  },
+  "unsupportedPage": {
+    "message": "在這個分頁打開一個網站，就能在這裡使用 Hibi。"
+  },
+  "siteOffIntro": {
+    "message": "Hibi 在 $1 尚未開啟。開啟後 Hibi 才能讀取並操作這個網站，隨時可以關閉。"
+  },
+  "turnOn": {
+    "message": "在 $1 開啟"
+  },
+  "turnOffSite": {
+    "message": "在此網站關閉"
+  },
+  "managePlan": {
+    "message": "方案與用量"
+  },
+  "signOut": {
+    "message": "登出"
+  },
+  "hello": {
+    "message": "嗨，我是 Hibi。告訴我要在 $1 做什麼。登入頁和機器人驗證由你自己來，送出前我一定先問你。"
+  },
+  "approveTitle": {
+    "message": "要送出「$1」嗎？"
+  },
+  "approve": {
+    "message": "同意"
+  },
+  "decline": {
+    "message": "先不要"
+  },
+  "approved": {
+    "message": "已同意"
+  },
+  "declined": {
+    "message": "未送出"
+  },
+  "stepCap": {
+    "message": "這個任務已用了 $1 步，繼續會算成另一個任務。"
+  },
+  "continue": {
+    "message": "繼續"
+  },
+  "stopHere": {
+    "message": "到此為止"
+  },
+  "working": {
+    "message": "處理中…"
+  },
+  "tasksLeft": {
+    "message": "本月剩 $1／$2 個任務"
+  },
+  "tasksExtra": {
+    "message": "超出的任務每個 US$$$1"
+  },
+  "allowanceUsed": {
+    "message": "本月任務已用完，到「方案與用量」加購。"
+  },
+  "useOnSite": {
+    "message": "在此網站使用 Hibi"
+  },
+  "needInvoke": {
+    "message": "要在這個分頁使用 Hibi，請點工具列的 Hibi 按鈕、按 Alt+Shift+H，或在頁面按右鍵選「在此網站使用 Hibi」。"
+  },
+  "actRead": {
+    "message": "讀取頁面"
+  },
+  "actClick": {
+    "message": "點了「$1」"
+  },
+  "actType": {
+    "message": "填了「$1」"
+  },
+  "actSelect": {
+    "message": "選了「$1」"
+  },
+  "actScroll": {
+    "message": "捲動頁面"
+  }
+}
