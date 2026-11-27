@@ -325,6 +325,7 @@ async function run(): Promise<void> {
   }
   await page.refresh();
   const current = page;
+  current.beginRequest();
   running = new AbortController();
   sendBtn.hidden = true;
   stopBtn.hidden = false;
