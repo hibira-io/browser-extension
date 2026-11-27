@@ -41,6 +41,18 @@ describe('ExtensionPage', () => {
     expect(sent).toHaveLength(0);
   });
 
+  it('allows inspection but prevents replay after an interrupted write', async () => {
+    const page = new ExtensionPage(1, 'https://shop.test/*');
+    const send = vi.spyOn(chrome.tabs, 'sendMessage');
+    send.mockRejectedValueOnce(new Error('port closed'));
+    await expect(page.click('e1')).rejects.toThrow('outcome unknown');
+    expect(await page.read()).toBe('Page: Orders');
+    await expect(page.click('e1')).rejects.toThrow('outcome unknown');
+    expect(send).toHaveBeenCalledTimes(2);
+    page.beginRequest();
+    await page.choose('e2', 'a');
+  });
+
   it('covers every PageAdapter method', () => {
     const page = new ExtensionPage(1, 'https://shop.test/*');
     for (const m of PAGE_METHODS) expect(typeof page[m]).toBe('function');
