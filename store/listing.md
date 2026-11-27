@@ -78,3 +78,7 @@ Hibi carries out web chores the user asks for in the side panel, on sites the us
 
 Test account: (Danny types the reviewer account's email and password in the dashboard; they are never stored here)
 ```
+
+## Update notes for review
+
+This update handles interrupted replies from an authorized page. If Chrome loses contact during an action, Hibi can inspect the page and requires a new user request before it sends another click, edit or navigation. This update requests zero additional Chrome permissions or host permissions. The existing permission justifications above apply.
