@@ -10,6 +10,8 @@ import type { AuditStep } from '../../vendor/secretary/core/runner';
 import type { Message, Summary, Tool, TurnResult } from '../../vendor/secretary/core/types';
 import { currentSession, signIn, signOut } from '../chrome/auth';
 import { BASE } from '../chrome/config';
+import { forgetFolder, pickFolder, savedFolder, usableFolder } from '../chrome/folder';
+import { folderTools } from '../chrome/folderTools';
 import { ExtensionPage } from '../chrome/page';
 import { isOn, originPattern, turnOff, turnOn } from '../chrome/sites';
 
@@ -30,6 +32,13 @@ input.placeholder = t('askPlaceholder');
 sendBtn.title = t('send');
 stopBtn.title = t('stop');
 $('menu').title = t('account');
+const folderBtn = $<HTMLButtonElement>('folderBtn');
+const folderOff = $<HTMLButtonElement>('folderOff');
+for (const [b, k] of [[folderBtn, 'chooseFolder'], [folderOff, 'forgetFolder']] as const) {
+  b.title = t(k);
+  b.dataset.tip = t(k);
+  b.setAttribute('aria-label', t(k));
+}
 
 const transport = new HttpTransport(new URL('/secretary/v1', BASE).toString(), {
   session: async () => {
@@ -308,6 +317,20 @@ input.addEventListener('keydown', (e) => {
   }
 });
 stopBtn.addEventListener('click', () => running?.abort());
+
+// The person's chosen folder (src/chrome/folder.ts).
+async function showFolder(): Promise<void> {
+  const h = await savedFolder();
+  $('folder').hidden = !h;
+  $('folderName').textContent = h ? t('folderOn', h.name) : '';
+}
+folderBtn.addEventListener('click', () => {
+  pickFolder().then(showFolder, () => undefined);
+});
+folderOff.addEventListener('click', () => {
+  forgetFolder().then(showFolder, () => undefined);
+});
+void showFolder();
 $('menu').addEventListener('click', () => {
   account.hidden = !account.hidden || account.childElementCount === 0;
 });
@@ -319,10 +342,10 @@ async function run(): Promise<void> {
   if (!origin) return;
   input.value = '';
   say('me', text);
-  if (!page) {
-    page = new ExtensionPage(tab.id, origin);
-    tools = builtinTools(page, () => pickLang(chrome.i18n.getUILanguage())).filter((x) => x.name !== 'point');
-  }
+  // The send is a click, so Chrome may ask again for the folder here.
+  const folder = await usableFolder(true).catch(() => null);
+  if (!page) page = new ExtensionPage(tab.id, origin);
+  tools = [...builtinTools(page, () => pickLang(chrome.i18n.getUILanguage())).filter((x) => x.name !== 'point'), ...(folder ? folderTools(page) : [])];
   await page.refresh();
   const current = page;
   current.beginRequest();

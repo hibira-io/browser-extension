@@ -124,6 +124,11 @@ export class Secretary {
     this.panel?.setOpen(false);
   }
 
+  /** Puts the panel back after a single-page app (Livewire, Turbo) replaced the body. */
+  remount() {
+    this.panel?.remount();
+  }
+
   /** Removes the panel and stops any work. */
   destroy() {
     this.abort?.abort();
@@ -379,7 +384,7 @@ export class Secretary {
       locale: () => this.lang,
       approve: async (_tool, _input, summary, signal) => {
         const ok = await panel.approve(summary, signal);
-        if (this.waiting) this.asked.set(this.waiting, { by: panel.decidedBy, fields: summary.fields ?? [] });
+        if (this.waiting) this.asked.set(this.waiting, { by: panel.decidedBy, fields: (summary.fields ?? []).map((f) => f.split(': ')[0]) });
         this.saveAudit();
         return ok;
       },

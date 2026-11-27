@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "登入沒有完成，請再試一次。"
+  },
+  "chooseFolder": {
+    "message": "讓 Hibi 使用電腦裡的一個資料夾"
+  },
+  "folderOn": {
+    "message": "資料夾：$1"
+  },
+  "forgetFolder": {
+    "message": "不再使用這個資料夾"
   }
 }

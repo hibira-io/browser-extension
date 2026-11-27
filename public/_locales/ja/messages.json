@@ -100,5 +100,14 @@
   },
   "signInFailed": {
     "message": "サインインが完了しませんでした。もう一度お試しください。"
+  },
+  "chooseFolder": {
+    "message": "このパソコンのフォルダを Hibi に使わせる"
+  },
+  "folderOn": {
+    "message": "フォルダ：$1"
+  },
+  "forgetFolder": {
+    "message": "このフォルダを使わない"
   }
 }

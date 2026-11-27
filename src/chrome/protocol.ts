@@ -15,4 +15,19 @@ export interface PageCall {
   args: unknown[];
 }
 
+/** A file for attach (no PageAdapter method: the extension's own). */
+export interface AttachCall {
+  hibi: 'attach';
+  ref: string;
+  file: { name: string; type: string; data: string };
+}
+
+/** An image for the look tool: its pixels when the page may read them, or
+ *  else where it is on screen, for the panel to crop from a tab capture. */
+export interface ImageCall {
+  hibi: 'image';
+  ref: string;
+}
+export type ImageReply = { kind: 'data'; media_type: string; data: string } | { kind: 'rect'; x: number; y: number; w: number; h: number; dpr: number };
+
 export type PageReply = { ok: true; value: unknown } | { ok: false; error: string };

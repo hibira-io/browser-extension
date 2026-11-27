@@ -5,7 +5,7 @@
 
 import type { PageAdapter, PageSignals } from '../../vendor/secretary/core/page';
 import type { Target } from '../../vendor/secretary/core/policy';
-import type { PageCall, PageMethod, PageReply } from './protocol';
+import type { AttachCall, ImageCall, ImageReply, PageCall, PageMethod, PageReply } from './protocol';
 import { isOn, originPattern } from './sites';
 
 export class SiteChangedError extends Error {}
@@ -25,14 +25,48 @@ export class ExtensionPage implements PageAdapter {
     this.current = { url: tab.url ?? '', title: tab.title ?? '' };
   }
 
-  private async call<T>(method: PageMethod, ...args: unknown[]): Promise<T> {
-    const writes = ['click', 'navigate', 'back', 'type', 'choose'].includes(method);
-    if (writes && this.uncertain) throw new Error('Action outcome unknown. Inspect the page before requesting another action.');
+  /** Waits for the page, checks it is still the task's site and Hibi is on
+   *  there, and makes sure the content script is in it. */
+  private async ready(): Promise<void> {
     await waitLoaded(this.tabId);
     await this.refresh();
     if (originPattern(this.current.url) !== this.origin) throw new SiteChangedError('the tab left the site this task is about; stop and tell the person');
     if (!(await isOn(this.current.url))) throw new SiteChangedError('Hibi is turned off for this site; stop and tell the person');
     await chrome.scripting.executeScript({ target: { tabId: this.tabId }, files: ['content.js'] });
+  }
+
+  /** The look tool's picture: read by the page, or cropped from a capture
+   *  of the tab when another site's image can't be read there. */
+  async image(ref: string): Promise<{ media_type: string; data: string }> {
+    await this.ready();
+    const msg: ImageCall = { hibi: 'image', ref };
+    const reply = (await chrome.tabs.sendMessage(this.tabId, msg)) as PageReply | undefined;
+    if (!reply) throw new Error('the page did not answer; read the page again');
+    if (!reply.ok) throw new Error(reply.error);
+    const got = reply.value as ImageReply;
+    if (got.kind === 'data') return { media_type: got.media_type, data: got.data };
+    const tab = await chrome.tabs.get(this.tabId);
+    // Chrome lets an extension capture a tab only after the person clicked
+    // its button there (activeTab), which is how the panel usually opens.
+    const shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }).catch(() => {
+      throw new Error("this image is from another site and can only be seen after the person clicks the Hibi button on this tab; tell them, or describe it from its alt text");
+    });
+    return crop(shot, got);
+  }
+
+  /** Puts a file from the person's chosen folder into a file field. */
+  async attach(ref: string, file: AttachCall['file']): Promise<void> {
+    await this.ready();
+    const msg: AttachCall = { hibi: 'attach', ref, file };
+    const reply = (await chrome.tabs.sendMessage(this.tabId, msg)) as PageReply | undefined;
+    if (!reply) throw new Error('the page did not answer; read the page again');
+    if (!reply.ok) throw new Error(reply.error);
+  }
+
+  private async call<T>(method: PageMethod, ...args: unknown[]): Promise<T> {
+    const writes = ["click", "navigate", "back", "type", "choose"].includes(method);
+    if (writes && this.uncertain) throw new Error("Action outcome unknown. Inspect the page before requesting another action.");
+    await this.ready();
     // Messages are JSON: a trailing undefined would arrive as null and
     // replace the method's default.
     while (args.length && args[args.length - 1] === undefined) args.pop();
@@ -88,4 +122,26 @@ async function settleLoad(tabId: number): Promise<void> {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+const LOOK_MAX = 1024;
+
+async function crop(shot: string, r: Extract<ImageReply, { kind: 'rect' }>): Promise<{ media_type: string; data: string }> {
+  const bmp = await createImageBitmap(await (await fetch(shot)).blob());
+  const sx = Math.round(r.x * r.dpr);
+  const sy = Math.round(r.y * r.dpr);
+  const sw = Math.min(bmp.width - sx, Math.round(r.w * r.dpr));
+  const sh = Math.min(bmp.height - sy, Math.round(r.h * r.dpr));
+  const k = Math.min(1, LOOK_MAX / Math.max(sw, sh, 1));
+  const c = new OffscreenCanvas(Math.max(1, Math.round(sw * k)), Math.max(1, Math.round(sh * k)));
+  const g = c.getContext('2d');
+  if (!g) throw new Error('this browser cannot read images');
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(bmp, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  const blob = await c.convertToBlob({ type: 'image/jpeg', quality: 0.8 });
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return { media_type: 'image/jpeg', data: btoa(s) };
 }

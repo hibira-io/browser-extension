@@ -103,6 +103,7 @@ function roleOf(el: Element): string {
     if (t === 'checkbox' || t === 'radio') return t;
     if (t === 'submit' || t === 'button' || t === 'reset' || t === 'image') return 'button';
     if (t === 'search') return 'searchbox';
+    if (t === 'file') return 'file';
     return 'textbox';
   }
   if ((el as HTMLElement).isContentEditable) return 'textbox';
@@ -119,7 +120,7 @@ function valueOf(el: Element): string {
   if (el instanceof HTMLSelectElement) return squash(Array.from(el.selectedOptions).map((o) => o.text).join(', '));
   if (el instanceof HTMLInputElement) {
     if (el.type === 'checkbox' || el.type === 'radio') return '';
-    if (el.type === 'file') return el.files?.length ? `${el.files.length} file(s)` : '';
+    if (el.type === 'file') return el.files?.length ? squash(Array.from(el.files).map((f) => f.name).join(', '), 120) : '';
     return squash(el.value, 120);
   }
   if (el instanceof HTMLTextAreaElement) return squash(el.value, 200);
@@ -212,7 +213,13 @@ export function snapshot(refs: Refs, max = 14000, root: Element = document.body)
   if (dialog) push('Note: a dialog is open; its content is listed first.');
   const seenText = new Set<string>();
   const walk = (el: Element, depth: number) => {
-    if (truncated || SKIP.has(el.tagName.toUpperCase()) || !visible(el)) return;
+    if (truncated || (SKIP.has(el.tagName.toUpperCase()) && !isPicture(el)) || !visible(el)) return;
+    if (el !== root && isPicture(el)) {
+      const ref = refs.add(el);
+      const name = squash(el.getAttribute('alt') || el.getAttribute('aria-label') || el.querySelector?.('title')?.textContent || '', 120);
+      push('  '.repeat(Math.min(depth, 6)) + `[${ref}] image${name ? ` "${name}"` : ''}`);
+      return;
+    }
     if (el !== root && el.matches(INTERACTIVE) && !(el.tagName === 'LABEL')) {
       const ref = refs.add(el);
       const role = roleOf(el);
@@ -256,6 +263,70 @@ export function snapshot(refs: Refs, max = 14000, root: Element = document.body)
   walk(root, 0);
   if (truncated) lines.push('… (the page is longer; scroll or use find to see more)');
   return { text: lines.join('\n'), truncated };
+}
+
+/** An image, canvas or drawing big enough to be worth looking at. */
+function isPicture(el: Element): boolean {
+  if (!(el instanceof HTMLImageElement || el instanceof HTMLCanvasElement || (el instanceof SVGSVGElement && !el.closest('button,a,[role=button]')))) return false;
+  const r = el.getBoundingClientRect();
+  return r.width >= 48 && r.height >= 48;
+}
+
+/** The longest side an image is sent at. */
+const LOOK_MAX = 1024;
+
+/**
+ * Captures an image, canvas or drawing on the page as a JPEG (data without
+ * the data: prefix), at most LOOK_MAX pixels a side. Never one inside the
+ * assistant or a data-secretary="private" area, and never an image from
+ * another site that does not allow it (the browser keeps those unreadable).
+ */
+export async function captureImage(el: Element): Promise<{ media_type: string; data: string }> {
+  if (!isPicture(el)) throw new Error('that is not an image, chart or drawing; use read_page for text');
+  if (!visible(el)) throw new Error('that image is hidden or private');
+  let src: CanvasImageSource;
+  let w: number;
+  let h: number;
+  if (el instanceof HTMLCanvasElement) {
+    src = el;
+    w = el.width;
+    h = el.height;
+  } else {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    if (el instanceof HTMLImageElement) {
+      img.src = el.currentSrc || el.src;
+    } else {
+      const svg = el.cloneNode(true) as SVGSVGElement;
+      const r = el.getBoundingClientRect();
+      svg.setAttribute('width', String(r.width));
+      svg.setAttribute('height', String(r.height));
+      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    }
+    await img.decode().catch(() => {
+      throw new Error('this image cannot be read (another site keeps it private)');
+    });
+    src = img;
+    w = img.naturalWidth || el.getBoundingClientRect().width;
+    h = img.naturalHeight || el.getBoundingClientRect().height;
+  }
+  const k = Math.min(1, LOOK_MAX / Math.max(w, h, 1));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w * k));
+  c.height = Math.max(1, Math.round(h * k));
+  const g = c.getContext('2d');
+  if (!g) throw new Error('this browser cannot read images');
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(src, 0, 0, c.width, c.height);
+  let url: string;
+  try {
+    url = c.toDataURL('image/jpeg', 0.8);
+  } catch {
+    throw new Error('this image cannot be read (another site keeps it private)');
+  }
+  return { media_type: 'image/jpeg', data: url.slice(url.indexOf(',') + 1) };
 }
 
 /** Controls and text that match words, for long pages. */
@@ -385,7 +456,7 @@ export function formSummary(el: Element): string[] {
       v = '✓';
     }
     if (!v) continue;
-    out.push(`${nameOf(f) || i.name}: ${v}`);
+    out.push(`${(nameOf(f) || i.name).replace(/\s*\*$/, '')}: ${v}`);
   }
   return out;
 }

@@ -138,6 +138,7 @@ const STEP_KEY: Record<string, StringKey> = {
   navigate: 'stepNavigate',
   go_back: 'stepBack',
   point: 'stepPoint',
+  look: 'stepLook',
   talk_to_person: 'stepPerson',
 };
 
@@ -590,6 +591,11 @@ export class Panel {
     this.log.textContent = '';
     this.steps.clear();
     this.note(this.tr('hello', { name: this.o.name }), 'ai');
+  }
+
+  /** Puts the panel back after a single-page app replaced the body. */
+  remount() {
+    if (!this.host.isConnected) (this.o.mount ?? document.body).appendChild(this.host);
   }
 
   destroy() {

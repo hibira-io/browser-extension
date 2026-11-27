@@ -124,6 +124,17 @@ export function builtinTools(page: PageAdapter, lang: () => Lang = () => 'en'): 
       inputSchema: obj({ ref: REF }, ['ref']),
       run: async (i) => ((await page.point(str(i.ref, 20))) ? 'Shown.' : 'That element is not on the page now.'),
     },
+    ...(page.image
+      ? [
+          {
+            name: 'look',
+            description: 'Looks at an image on the page (a [eN] image line): a chart, a product photo, a scanned document or receipt. Use it only when the text on the page is not enough; it costs more than reading.',
+            inputSchema: obj({ ref: REF }, ['ref']),
+            check: async () => (await pageRefusal(page)) ?? { kind: 'run' as const },
+            run: async (i: Record<string, unknown>): Promise<ImageResult> => ({ image: await page.image!(str(i.ref, 20)), text: 'The image is attached below.' }),
+          } satisfies Tool,
+        ]
+      : []),
   ];
 }
 
@@ -171,6 +182,16 @@ export function repairInput(input: Record<string, unknown>): Record<string, unkn
 }
 
 /** A tool's result as text for the model (cut to keep turns small). */
+/** What the look tool returns: an image for the model, with a line of text. */
+export interface ImageResult {
+  image: { media_type: string; data: string };
+  text: string;
+}
+
+export function isImageResult(v: unknown): v is ImageResult {
+  return !!v && typeof v === 'object' && 'image' in v && typeof (v as ImageResult).image?.data === 'string';
+}
+
 export function resultText(v: unknown, max = 16000): string {
   let s: string;
   if (v === undefined || v === null) s = 'Done.';

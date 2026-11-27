@@ -18,6 +18,10 @@
 <main id="log" aria-live="polite"></main>
 <section id="gate" class="gate" hidden></section>
 <form id="ask" class="ask" hidden>
+  <div id="folder" class="folder" hidden><span id="folderName"></span><button id="folderOff" type="button" class="chipx" data-tip="" aria-label="">✕</button></div>
+  <button id="folderBtn" type="button" class="icon" data-tip="" aria-label="">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2h8.4A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+  </button>
   <textarea id="input" rows="2"></textarea>
   <button id="send" type="submit" class="icon primary" aria-label="Send">
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z" fill="currentColor"/></svg>

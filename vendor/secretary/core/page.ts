@@ -3,7 +3,7 @@
 // content script, so the agent loop and the panel stay the same.
 
 import { makeMarks, type Marks } from '../../shared/marks';
-import { choose, click, describe, find, formSummary, Refs, scrollTo, settle, snapshot, type, pageSignals } from './dom';
+import { captureImage, choose, click, describe, find, formSummary, Refs, scrollTo, settle, snapshot, type, pageSignals } from './dom';
 import type { Target } from './policy';
 
 export interface PageSignals {
@@ -24,6 +24,8 @@ export interface PageAdapter {
   type(ref: string, text: string, opts: { clear?: boolean; submit?: boolean }): Promise<void>;
   choose(ref: string, value: string): Promise<string>;
   scroll(target: string): Promise<void>;
+  /** An image, canvas or drawing on the page, for the model to look at (optional: a page without it has no look tool). */
+  image?(ref: string): Promise<{ media_type: string; data: string }>;
   /** Opens a URL on the same site (a full page load). */
   navigate(url: string): Promise<void>;
   back(): Promise<void>;
@@ -61,6 +63,9 @@ export class LocalPage implements PageAdapter {
     return el;
   }
 
+  async image(ref: string) {
+    return captureImage(this.el(ref));
+  }
   async read(max?: number) {
     return snapshot(this.refs, max).text;
   }
