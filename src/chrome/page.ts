@@ -1,8 +1,7 @@
 // The Secretary core's PageAdapter over the content script, for one tab and
 // one site. Every call checks the tab is still on the site the task is about
 // and that the person still has Hibi turned on there, injects the content
-// script when the page is new, and treats a page load during a call (a
-// click that navigates) as the call having worked.
+// script when the page is new, checks responses before reporting success.
 
 import type { PageAdapter, PageSignals } from '../../vendor/secretary/core/page';
 import type { Target } from '../../vendor/secretary/core/policy';
@@ -13,6 +12,10 @@ export class SiteChangedError extends Error {}
 
 export class ExtensionPage implements PageAdapter {
   /** The tab's URL and title as of the last check; the runner reads them synchronously. */
+  private uncertain = false;
+
+  beginRequest(): void { this.uncertain = false; }
+
   current = { url: '', title: '' };
 
   constructor(readonly tabId: number, readonly origin: string) {}
@@ -61,6 +64,8 @@ export class ExtensionPage implements PageAdapter {
   }
 
   private async call<T>(method: PageMethod, ...args: unknown[]): Promise<T> {
+    const writes = ["click", "navigate", "back", "type", "choose"].includes(method);
+    if (writes && this.uncertain) throw new Error("Action outcome unknown. Inspect the page before requesting another action.");
     await this.ready();
     // Messages are JSON: a trailing undefined would arrive as null and
     // replace the method's default.
@@ -70,14 +75,11 @@ export class ExtensionPage implements PageAdapter {
     try {
       reply = (await chrome.tabs.sendMessage(this.tabId, msg)) as PageReply | undefined;
     } catch (e) {
-      // The page unloaded before answering: a click or navigate that worked.
-      if (method === 'click' || method === 'navigate' || method === 'back' || method === 'type') {
-        await settleLoad(this.tabId);
-        await this.refresh();
-        return undefined as T;
-      }
-      throw e;
+      if (!writes) throw e;
+      this.uncertain = true;
+      throw new Error('Action outcome unknown. Read the page to verify the result.');
     }
+    if (!reply && writes) this.uncertain = true;
     if (!reply) throw new Error('the page did not answer; read the page again');
     if (!reply.ok) throw new Error(reply.error);
     if (method === 'click' || method === 'navigate' || method === 'back') {

@@ -348,6 +348,7 @@ async function run(): Promise<void> {
   tools = [...builtinTools(page, () => pickLang(chrome.i18n.getUILanguage())).filter((x) => x.name !== 'point'), ...(folder ? folderTools(page) : [])];
   await page.refresh();
   const current = page;
+  current.beginRequest();
   running = new AbortController();
   sendBtn.hidden = true;
   stopBtn.hidden = false;
